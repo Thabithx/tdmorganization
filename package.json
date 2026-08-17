@@ -2,10 +2,11 @@
   "name": "frost-mvp",
   "version": "1.0.0",
   "scripts": {
+    "start": "cd server && node server.js",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "npm run build --prefix client",
+    "build": "cd client && npm install && npm run build",
     "seed": "cd server && npm run seed"
   },
   "devDependencies": {

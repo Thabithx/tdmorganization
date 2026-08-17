@@ -49,12 +49,15 @@ const initializeAdmin = async () => {
   }
 };
 
+// Start listening immediately so Render port check passes quickly
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`FROST Server running on 0.0.0.0:${PORT}`);
+});
+
+// Connect DB asynchronously
 connectDB().then(async () => {
+  console.log('Database connected successfully.');
   await initializeAdmin();
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
 }).catch(err => {
-  console.error('Failed to connect to DB', err);
-  process.exit(1);
+  console.error('Failed to connect to DB on startup:', err.message);
 });
