@@ -209,18 +209,13 @@ const ChallengePage = () => {
                 {/* Prize Breakdown */}
                 {amountNum >= minimumAmount && (
                   <div className="p-4 rounded-xl bg-[#06090F] border border-[#8BE3FF]/15 space-y-2">
-                    <p className="text-[#8BE3FF] text-[10px] font-heading font-bold uppercase tracking-widest">Prize Pool Breakdown</p>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-secondary">Challenger Total Stake:</span>
+                      <span className="text-secondary">Challenge Stake:</span>
                       <span className="text-[#F4FBFF] font-bold">{formatAmount(amountNum)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-semibold">
-                      <span className="text-emerald-400">Winner Net Payout (80%):</span>
+                      <span className="text-emerald-400">Winner Prize:</span>
                       <span className="text-emerald-400 font-heading font-bold">{formatAmount(winnerNetPrize)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-secondary/70">Platform Fee (20%):</span>
-                      <span className="text-secondary/70">{formatAmount(platformFee)}</span>
                     </div>
                   </div>
                 )}
@@ -228,7 +223,7 @@ const ChallengePage = () => {
                 <div className="bg-frost-900/60 rounded-xl p-4 border border-frost-50/5 text-xs text-secondary space-y-1.5">
                   <p>• Payment is only required <strong className="text-frost-100">after</strong> your opponent accepts.</p>
                   <p>• If rejected, no payment is taken.</p>
-                  <p>• The winner receives <strong className="text-emerald-400">80%</strong> net payout of the stake.</p>
+                  <p>• Winner receives the official prize reward upon match completion.</p>
                 </div>
 
                 <Button
@@ -262,7 +257,7 @@ const ChallengePage = () => {
                     <span className="font-heading text-lg font-extrabold text-frost-50">{formatAmount(amountNum)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-frost-50/5">
-                    <span className="text-emerald-400 text-sm font-semibold">Winner Net Payout (80%)</span>
+                    <span className="text-emerald-400 text-sm font-semibold">Winner Prize</span>
                     <span className="font-heading text-base font-bold text-emerald-400">{formatAmount(winnerNetPrize)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3">

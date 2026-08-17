@@ -89,7 +89,7 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
           </div>
 
           <div className="mt-2 p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/10 flex items-center justify-between">
-            <span className="text-[#4A5D6E] text-[11px] uppercase font-heading font-semibold">Winner Net Payout (80%):</span>
+            <span className="text-[#4A5D6E] text-[11px] uppercase font-heading font-semibold">Winner Prize:</span>
             <span className="text-emerald-400 font-heading font-bold text-xs">{formatAmount(winnerPrize)}</span>
           </div>
 
