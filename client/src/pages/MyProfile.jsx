@@ -99,7 +99,7 @@ const MyProfile = () => {
                 <img
                   src={currentAvatar}
                   alt={profile?.ign}
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-frost-50/20"
+                  className="w-20 h-20 rounded-2xl object-contain bg-[#0B101A] border-2 border-frost-50/20"
                   style={{ objectPosition: avatarPosition }}
                   onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
                 />

@@ -2,7 +2,7 @@ import React from 'react';
 
 const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png';
 
-const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = 'center' }) => {
+const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = 'center top' }) => {
   const ign = profile?.ign || 'P';
   const avatar = profile?.avatar || DEFAULT_AVATAR;
 
@@ -23,12 +23,12 @@ const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = '
   };
 
   return (
-    <div className={`relative rounded-2xl overflow-hidden bg-[#0B101A] select-none ${sizes[size]} ${borderColors()} ${className}`}>
+    <div className={`relative rounded-2xl overflow-hidden bg-[#0B101A] select-none flex items-start justify-center ${sizes[size]} ${borderColors()} ${className}`}>
       <img
         src={avatar}
         alt={ign}
-        className="w-full h-full object-cover"
-        style={{ objectPosition }}
+        className="w-full h-full object-contain"
+        style={{ objectPosition: profile?.avatarPosition || objectPosition }}
         onError={(e) => {
           e.target.onerror = null;
           e.target.src = DEFAULT_AVATAR;
@@ -39,3 +39,4 @@ const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = '
 };
 
 export default PlayerAvatar;
+
