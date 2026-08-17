@@ -27,11 +27,18 @@ import Notifications from './pages/Notifications';
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminPlayers from './pages/admin/AdminPlayers';
+import AdminPlayerDetail from './pages/admin/AdminPlayerDetail';
 import AdminRankings from './pages/admin/AdminRankings';
 import AdminChallenges from './pages/admin/AdminChallenges';
+import AdminChallengeDetail from './pages/admin/AdminChallengeDetail';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminMatches from './pages/admin/AdminMatches';
+import AdminMatchDetail from './pages/admin/AdminMatchDetail';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import AdminDisputes from './pages/admin/AdminDisputes';
+import AdminSearch from './pages/admin/AdminSearch';
+import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminSettings from './pages/admin/AdminSettings';
 
 // Route guards
 const ProtectedRoute = ({ children }) => {
@@ -68,11 +75,18 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="players" element={<AdminPlayers />} />
+          <Route path="players/:id" element={<AdminPlayerDetail />} />
           <Route path="rankings" element={<AdminRankings />} />
           <Route path="challenges" element={<AdminChallenges />} />
+          <Route path="challenges/:id" element={<AdminChallengeDetail />} />
           <Route path="payments" element={<AdminPayments />} />
           <Route path="matches" element={<AdminMatches />} />
+          <Route path="matches/:id" element={<AdminMatchDetail />} />
           <Route path="audit-logs" element={<AdminAuditLogs />} />
+          <Route path="disputes" element={<AdminDisputes />} />
+          <Route path="search" element={<AdminSearch />} />
+          <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/* Public/Main routes */}

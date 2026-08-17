@@ -89,3 +89,33 @@ export const getRankingHistory = async (params) => {
   const res = await api.get('/admin/ranking-history', { params });
   return res.data;
 };
+
+export const globalSearch = async (q) => {
+  const res = await api.get('/admin/search', { params: { q } });
+  return res.data;
+};
+
+export const getAdminPlayerById = async (id) => {
+  const res = await api.get(`/admin/players/${id}`);
+  return res.data;
+};
+
+export const addPlayerNote = async (id, content) => {
+  const res = await api.post(`/admin/players/${id}/notes`, { content });
+  return res.data;
+};
+
+export const deletePlayerNote = async (id, noteId) => {
+  const res = await api.delete(`/admin/players/${id}/notes/${noteId}`);
+  return res.data;
+};
+
+export const getAdminChallengeById = async (id) => {
+  const res = await api.get(`/admin/challenges/${id}`);
+  return res.data;
+};
+
+export const correctMatchResult = async (id, result, reason) => {
+  const res = await api.post(`/admin/matches/${id}/correct`, { result, reason });
+  return res.data;
+};

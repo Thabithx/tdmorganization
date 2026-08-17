@@ -28,44 +28,125 @@ const uploadToCloudinary = (fileBuffer) => {
 // Dashboard summary stats
 const getDashboard = async (req, res, next) => {
   try {
+    const Notification = require('../models/Notification');
+    const PLATFORMS = ['MOBILE', 'IPAD', 'EMULATOR'];
+
     const [
-      totalPlayers, rankedPlayers, pendingChallenges, pendingPayments,
-      activeMatches, completedMatches, disputedMatches
+      totalPlayers, rankedAgg, pendingChallenges, pendingPayments,
+      activeMatches, completedMatches, disputedMatches, matchesAwaitingResult
     ] = await Promise.all([
-      PlayerProfile.countDocuments({ status: 'ACTIVE' }),
+      PlayerProfile.countDocuments(),
       Ranking.aggregate([{ $project: { count: { $size: '$players' } } }, { $group: { _id: null, total: { $sum: '$count' } } }]),
       Challenge.countDocuments({ status: { $in: ['PENDING', 'ACCEPTED'] } }),
       Payment.countDocuments({ status: 'PENDING' }),
-      Challenge.countDocuments({ status: { $in: ['MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING'] } }),
+      Challenge.countDocuments({ status: { $in: ['MATCH_PENDING', 'MATCH_ACTIVE'] } }),
       Match.countDocuments({ resultStatus: 'COMPLETED' }),
       Match.countDocuments({ resultStatus: 'DISPUTED' }),
+      Challenge.countDocuments({ status: 'RESULT_PENDING' }),
     ]);
 
-    const recentMatches = await Match.find({ resultStatus: 'COMPLETED' })
-      .populate('challengerId', 'ign')
-      .populate('defenderId', 'ign')
-      .populate('winnerId', 'ign')
-      .sort({ matchCompletedAt: -1 })
-      .limit(5);
+    const rankedCount = rankedAgg[0]?.total || 0;
+
+    // Platform breakdown
+    const platformBreakdown = await Promise.all(PLATFORMS.map(async (platform) => {
+      const rankDocs = await Ranking.find({ platform });
+      const rankedInPlatform = rankDocs.reduce((sum, r) => sum + r.players.length, 0);
+      const activeChallenges = await Challenge.countDocuments({ platform, status: { $in: ['MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING'] } });
+      const completedMatchesOnPlatform = await Match.countDocuments({ platform, resultStatus: 'COMPLETED' });
+      return { platform, rankedCount: rankedInPlatform, activeChallenges, completedMatches: completedMatchesOnPlatform };
+    }));
+
+    // Action queue: items requiring admin attention
+    const [resultPendingChallenges, disputedMatchDocs, failedPayments] = await Promise.all([
+      Challenge.find({ status: 'RESULT_PENDING' })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign')
+        .sort({ updatedAt: 1 })
+        .limit(20),
+      Match.find({ resultStatus: 'DISPUTED' })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign')
+        .sort({ createdAt: 1 })
+        .limit(10),
+      Payment.find({ status: 'FAILED' })
+        .populate('payerId', 'ign')
+        .sort({ createdAt: -1 })
+        .limit(10),
+    ]);
+
+    const actionQueue = [
+      ...resultPendingChallenges.map(c => ({
+        type: 'RESULT_PENDING',
+        urgency: 'HIGH',
+        label: `${c.challengerId?.ign || 'Unknown'} vs ${c.defenderId?.ign || 'Unknown'}`,
+        detail: `Rs. ${c.challengeAmount} — result required`,
+        linkType: 'challenge',
+        linkId: c._id,
+        timestamp: c.updatedAt,
+      })),
+      ...disputedMatchDocs.map(m => ({
+        type: 'DISPUTED',
+        urgency: 'HIGH',
+        label: `${m.challengerId?.ign || 'Unknown'} vs ${m.defenderId?.ign || 'Unknown'}`,
+        detail: 'Match dispute — needs resolution',
+        linkType: 'match',
+        linkId: m._id,
+        timestamp: m.createdAt,
+      })),
+      ...failedPayments.map(p => ({
+        type: 'PAYMENT_FAILED',
+        urgency: 'MEDIUM',
+        label: `${p.payerId?.ign || 'Unknown'}`,
+        detail: `Payment of Rs. ${p.amount} failed`,
+        linkType: 'payment',
+        linkId: p._id,
+        timestamp: p.createdAt,
+      })),
+    ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Recent activity from audit log
+    const recentActivity = await AdminAuditLog.find()
+      .populate('adminId', 'username')
+      .sort({ createdAt: -1 })
+      .limit(15);
+
+    // Leaderboard preview
+    const leaderboardPreview = {};
+    for (const platform of PLATFORMS) {
+      const ranks = await Ranking.find({ platform, rank: { $gte: 1, $lte: 10 } })
+        .populate('players', 'ign _id')
+        .sort({ rank: 1 });
+      leaderboardPreview[platform] = ranks.map(r => ({
+        rank: r.rank,
+        players: r.players.map(p => ({ _id: p._id, ign: p.ign })),
+      }));
+    }
 
     res.json({
       success: true,
       data: {
-        totalPlayers,
-        rankedPlayers: rankedPlayers[0]?.total || 0,
-        unrankedPlayers: totalPlayers - (rankedPlayers[0]?.total || 0),
-        pendingChallenges,
-        pendingPayments,
-        activeMatches,
-        completedMatches,
-        disputedMatches,
-        recentMatches,
+        stats: {
+          totalPlayers,
+          rankedPlayers: rankedCount,
+          unrankedPlayers: totalPlayers - rankedCount,
+          pendingChallenges,
+          pendingPayments,
+          activeMatches,
+          matchesAwaitingResult,
+          completedMatches,
+          disputedMatches,
+        },
+        platformBreakdown,
+        actionQueue,
+        recentActivity,
+        leaderboardPreview,
       },
     });
   } catch (err) {
     next(err);
   }
 };
+
 
 // Players management
 const getAdminPlayers = async (req, res, next) => {
@@ -390,6 +471,331 @@ const getRankingHistory = async (req, res, next) => {
   }
 };
 
+// Global Admin Search
+const globalSearch = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.json({ success: true, data: { players: [], challenges: [], matches: [], payments: [] } });
+    }
+
+    const mongoose = require('mongoose');
+    const queryRegex = new RegExp(q, 'i');
+    
+    // 1. Players Search
+    const players = await PlayerProfile.find({
+      $or: [
+        { ign: queryRegex },
+        { pubgUid: queryRegex },
+        { bio: queryRegex }
+      ]
+    }).limit(10);
+
+    // 2. Challenges Search
+    let challenges = [];
+    if (mongoose.Types.ObjectId.isValid(q)) {
+      challenges = await Challenge.find({ _id: q })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign');
+    } else {
+      const searchPlayers = await PlayerProfile.find({ ign: queryRegex });
+      const playerIds = searchPlayers.map(p => p._id);
+      challenges = await Challenge.find({
+        $or: [
+          { challengerId: { $in: playerIds } },
+          { defenderId: { $in: playerIds } }
+        ]
+      })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign')
+        .limit(10);
+    }
+
+    // 3. Matches Search
+    let matches = [];
+    if (mongoose.Types.ObjectId.isValid(q)) {
+      matches = await Match.find({ $or: [{ _id: q }, { challengeId: q }] })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign');
+    } else {
+      const searchPlayers = await PlayerProfile.find({ ign: queryRegex });
+      const playerIds = searchPlayers.map(p => p._id);
+      matches = await Match.find({
+        $or: [
+          { challengerId: { $in: playerIds } },
+          { defenderId: { $in: playerIds } }
+        ]
+      })
+        .populate('challengerId', 'ign')
+        .populate('defenderId', 'ign')
+        .limit(10);
+    }
+
+    // 4. Payments Search
+    let payments = [];
+    if (mongoose.Types.ObjectId.isValid(q)) {
+      payments = await Payment.find({ $or: [{ _id: q }, { challengeId: q }] })
+        .populate('payerId', 'ign');
+    } else {
+      payments = await Payment.find({
+        $or: [
+          { payhereOrderId: queryRegex },
+          { payhereTransactionId: queryRegex }
+        ]
+      })
+        .populate('payerId', 'ign')
+        .limit(10);
+    }
+
+    res.json({
+      success: true,
+      data: { players, challenges, matches, payments }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Player Details aggregated
+const getAdminPlayerById = async (req, res, next) => {
+  try {
+    const statsService = require('../services/stats.service');
+    const profile = await PlayerProfile.findById(req.params.id)
+      .populate('userId', 'username email role status')
+      .populate('adminNotes.adminId', 'username');
+      
+    if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
+
+    const rankDoc = await Ranking.findOne({ platform: profile.platform, players: profile._id });
+    const currentRank = rankDoc ? rankDoc.rank : null;
+
+    const stats = await statsService.getPlayerStats(profile._id);
+    const challengesCreated = await Challenge.find({ challengerId: profile._id })
+      .populate('defenderId', 'ign')
+      .sort({ createdAt: -1 });
+    const challengesReceived = await Challenge.find({ defenderId: profile._id })
+      .populate('challengerId', 'ign')
+      .sort({ createdAt: -1 });
+
+    const matches = await Match.find({
+      $or: [{ challengerId: profile._id }, { defenderId: profile._id }]
+    })
+      .populate('challengerId', 'ign')
+      .populate('defenderId', 'ign')
+      .populate('winnerId', 'ign')
+      .sort({ createdAt: -1 });
+
+    const payments = await Payment.find({ payerId: profile._id })
+      .populate('challengeId')
+      .sort({ createdAt: -1 });
+
+    const rankHistory = await RankingHistory.find({ playerId: profile._id })
+      .populate('adminId', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: {
+        profile,
+        currentRank,
+        stats,
+        challengesCreated,
+        challengesReceived,
+        matches,
+        payments,
+        rankHistory
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Private Admin Notes
+const addPlayerNote = async (req, res, next) => {
+  try {
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ success: false, message: 'Note content is required.' });
+
+    const profile = await PlayerProfile.findById(req.params.id);
+    if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
+
+    profile.adminNotes.push({
+      adminId: req.user._id,
+      content,
+      createdAt: new Date()
+    });
+
+    await profile.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      action: 'PLAYER_NOTE_ADDED',
+      targetEntity: 'PlayerProfile',
+      targetId: profile._id,
+      metadata: { note: content }
+    });
+
+    res.json({ success: true, data: profile.adminNotes });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deletePlayerNote = async (req, res, next) => {
+  try {
+    const profile = await PlayerProfile.findById(req.params.id);
+    if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
+
+    profile.adminNotes = profile.adminNotes.filter(n => n._id.toString() !== req.params.noteId);
+    await profile.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      action: 'PLAYER_NOTE_DELETED',
+      targetEntity: 'PlayerProfile',
+      targetId: profile._id,
+      metadata: { noteId: req.params.noteId }
+    });
+
+    res.json({ success: true, data: profile.adminNotes });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Challenge details timeline helper
+const getAdminChallengeById = async (req, res, next) => {
+  try {
+    const challenge = await Challenge.findById(req.params.id)
+      .populate('challengerId', 'ign pubgUid platform avatar')
+      .populate('defenderId', 'ign pubgUid platform avatar');
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found.' });
+
+    const payment = await Payment.findOne({ challengeId: challenge._id });
+    const match = await Match.findOne({ challengeId: challenge._id })
+      .populate('winnerId', 'ign')
+      .populate('loserId', 'ign')
+      .populate('verifiedBy', 'username');
+
+    res.json({
+      success: true,
+      data: { challenge, payment, match }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Transactional Match result correction workflow
+const correctMatchResult = async (req, res, next) => {
+  const mongoose = require('mongoose');
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { result, reason } = req.body;
+    if (!['CHALLENGER_WON', 'CHALLENGER_LOST'].includes(result)) {
+      return res.status(400).json({ success: false, message: 'Invalid result value.' });
+    }
+    if (!reason) {
+      return res.status(400).json({ success: false, message: 'Reason for result correction is required.' });
+    }
+
+    const match = await Match.findById(req.params.id)
+      .populate('challengerId')
+      .populate('defenderId');
+    if (!match) return res.status(404).json({ success: false, message: 'Match not found.' });
+
+    const originalResult = match.result;
+    if (originalResult === result) {
+      return res.status(400).json({ success: false, message: 'New result cannot be the same as original result.' });
+    }
+
+    // 1. REVERSE RANKINGS USING MATCH RANKING HISTORY
+    const history = await RankingHistory.find({ matchId: match._id }).session(session);
+    
+    // First remove them from their newRank
+    for (const h of history) {
+      if (h.newRank) {
+        const rDoc = await Ranking.findOne({ platform: h.platform, rank: h.newRank }).session(session);
+        if (rDoc) {
+          rDoc.players = rDoc.players.filter(pid => pid.toString() !== h.playerId.toString());
+          if (rDoc.players.length === 0) {
+            await Ranking.deleteOne({ _id: rDoc._id }).session(session);
+          } else {
+            await rDoc.save({ session });
+          }
+        }
+      }
+    }
+    
+    // Next insert them back into their previousRank
+    for (const h of history) {
+      if (h.previousRank) {
+        let rDoc = await Ranking.findOne({ platform: h.platform, rank: h.previousRank }).session(session);
+        if (!rDoc) {
+          rDoc = new Ranking({ platform: h.platform, rank: h.previousRank, players: [h.playerId] });
+        } else {
+          if (!rDoc.players.map(p => p.toString()).includes(h.playerId.toString())) {
+            rDoc.players.push(h.playerId);
+          }
+        }
+        await rDoc.save({ session });
+      }
+    }
+
+    // Delete old history entries
+    await RankingHistory.deleteMany({ matchId: match._id }).session(session);
+
+    // 2. APPLY THE NEW CORRECTED RESULT
+    const newWinnerId = result === 'CHALLENGER_WON' ? match.challengerId._id : match.defenderId._id;
+    const newLoserId = result === 'CHALLENGER_WON' ? match.defenderId._id : match.challengerId._id;
+
+    const rankingHistoryEntries = await rankingService.applyMatchResult(
+      {
+        ...match.toObject(),
+        challengerId: match.challengerId._id,
+        defenderId: match.defenderId._id,
+        platform: match.platform,
+      },
+      result,
+      req.user._id,
+      session
+    );
+
+    // Update Match Doc
+    match.winnerId = newWinnerId;
+    match.loserId = newLoserId;
+    match.result = result;
+    match.adminNotes = `${match.adminNotes || ''}\n[CORRECTED by admin: ${req.user.username} on ${new Date().toISOString()}. Reason: ${reason}]`;
+    await match.save({ session });
+
+    // Save new ranking history
+    if (rankingHistoryEntries.length > 0) {
+      await RankingHistory.insertMany(rankingHistoryEntries, { session });
+    }
+
+    // Log admin action
+    await AdminAuditLog.create([{
+      adminId: req.user._id,
+      action: 'MATCH_RESULT_CORRECTED',
+      targetEntity: 'Match',
+      targetId: match._id,
+      reason,
+      metadata: { originalResult, correctedResult: result }
+    }], { session });
+
+    await session.commitTransaction();
+    res.json({ success: true, message: 'Match result corrected successfully.' });
+  } catch (err) {
+    await session.abortTransaction();
+    next(err);
+  } finally {
+    session.endSession();
+  }
+};
+
 module.exports = {
   getDashboard, getAdminPlayers, updateAdminPlayer, suspendPlayer, restorePlayer,
   getAdminRankings, manualRankingUpdate,
@@ -397,4 +803,5 @@ module.exports = {
   getAdminPayments, confirmPaymentManual,
   getAdminMatches, getAdminMatchById, addMatchEvidence, updateMatchStatus, confirmMatchResult,
   getAuditLogs, getRankingHistory,
+  globalSearch, getAdminPlayerById, addPlayerNote, deletePlayerNote, getAdminChallengeById, correctMatchResult,
 };

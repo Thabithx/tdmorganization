@@ -9,6 +9,11 @@ const playerProfileSchema = new mongoose.Schema({
   avatarPosition: { type: String, default: 'center top' },
   bio: { type: String, default: '', maxlength: 300 },
   status: { type: String, enum: ['ACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
+  adminNotes: [{
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 playerProfileSchema.index({ ign: 'text' });
