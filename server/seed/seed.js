@@ -74,7 +74,7 @@ const seedData = async () => {
           ign: name,
           pubgUid: Math.floor(100000000 + Math.random() * 900000000).toString(),
           platform,
-          avatar: 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786951284/frost_defaults/default_avatar.jpg',
+          avatar: 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786951776/frost_defaults/default_avatar.jpg',
           bio: `Official TDM Player for FROST Network on ${platform}. Think you're better? Prove it.`
         });
 
