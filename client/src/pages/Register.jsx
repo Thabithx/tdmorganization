@@ -55,6 +55,7 @@ const Register = () => {
       const res = await authService.register(payload);
       if (res.success) {
         login(res.data.token, res.data.user, res.data.profile);
+        navigate('/');
       } else {
         setError(res.message || 'Registration failed.');
       }

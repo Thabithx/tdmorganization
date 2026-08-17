@@ -3,35 +3,20 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    touch-action: manipulation;
-  }
-
   body {
     background-color: #05070D;
     font-family: 'Inter', sans-serif;
     color: #F4FBFF;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
   }
 
-  /* Prevent auto-zooming on focus across iOS/Android mobile browsers */
   @media screen and (max-width: 768px) {
-    input[type="text"],
-    input[type="number"],
-    input[type="email"],
-    input[type="password"],
-    input[type="search"],
-    input[type="tel"],
-    select,
-    textarea {
+    input, select, textarea {
       font-size: 16px !important;
-      touch-action: manipulation;
     }
   }
 }
