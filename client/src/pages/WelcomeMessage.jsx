@@ -1,19 +1,12 @@
 import React from 'react';
-import { Snowflake, LogOut, CheckCircle } from 'lucide-react';
+import { Snowflake, CheckCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
 import FrostParticles from '../components/frost/FrostParticles';
 import FrostLogo from '../components/frost/FrostLogo';
 import useAuth from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 
 const WelcomeMessage = () => {
-  const { user, profile, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const { user, profile } = useAuth();
 
   return (
     <div className="relative flex items-center justify-center min-h-[85vh] py-12 px-4">
@@ -52,20 +45,12 @@ const WelcomeMessage = () => {
             </p>
           </div>
 
-          {/* User badge & Logout */}
-          <div className="pt-6 border-t border-frost-50/10 flex items-center justify-between">
-            <div className="text-left">
+          {/* User badge */}
+          <div className="pt-6 border-t border-frost-50/10 flex items-center justify-center">
+            <div className="text-center">
               <p className="text-[#F4FBFF] font-heading font-bold text-xs uppercase">{profile?.ign || user?.username}</p>
               <p className="text-[#4A5D6E] text-[10px] uppercase tracking-wider">{profile?.platform || 'PLAYER'}</p>
             </div>
-
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/30 border border-red-500/20 text-red-300 hover:bg-red-900/40 text-xs font-heading font-semibold uppercase transition-all"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign Out
-            </button>
           </div>
         </Card>
       </div>
