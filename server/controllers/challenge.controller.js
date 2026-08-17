@@ -1,0 +1,83 @@
+const Challenge = require('../models/Challenge');
+const PlayerProfile = require('../models/PlayerProfile');
+const challengeService = require('../services/challenge.service');
+
+const createChallenge = async (req, res, next) => {
+  try {
+    const { defenderId, amount } = req.body;
+    if (!defenderId || !amount) {
+      return res.status(400).json({ success: false, message: 'defenderId and amount are required.' });
+    }
+    const challenge = await challengeService.createChallenge({
+      challengerUserId: req.user._id,
+      defenderId,
+      amount: parseFloat(amount),
+    });
+    res.status(201).json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getChallenges = async (req, res, next) => {
+  try {
+    const profile = await PlayerProfile.findOne({ userId: req.user._id });
+    if (!profile) return res.status(404).json({ success: false, message: 'Profile not found.' });
+
+    const { status, role } = req.query;
+    const query = {};
+
+    if (role === 'incoming') query.defenderId = profile._id;
+    else if (role === 'outgoing') query.challengerId = profile._id;
+    else query.$or = [{ challengerId: profile._id }, { defenderId: profile._id }];
+
+    if (status) query.status = status;
+
+    const challenges = await Challenge.find(query)
+      .populate('challengerId', 'ign pubgUid platform avatar')
+      .populate('defenderId', 'ign pubgUid platform avatar')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: challenges });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getChallengeById = async (req, res, next) => {
+  try {
+    const challenge = await Challenge.findById(req.params.id)
+      .populate('challengerId', 'ign pubgUid platform avatar')
+      .populate('defenderId', 'ign pubgUid platform avatar');
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found.' });
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const acceptChallenge = async (req, res, next) => {
+  try {
+    const challenge = await challengeService.acceptChallenge({
+      challengeId: req.params.id,
+      defenderUserId: req.user._id,
+    });
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const rejectChallenge = async (req, res, next) => {
+  try {
+    const challenge = await challengeService.rejectChallenge({
+      challengeId: req.params.id,
+      defenderUserId: req.user._id,
+    });
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { createChallenge, getChallenges, getChallengeById, acceptChallenge, rejectChallenge };
