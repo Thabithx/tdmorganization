@@ -161,7 +161,7 @@ export default function TempSignup() {
                     required
                     value={form.ign}
                     onChange={handleChange}
-                    placeholder="e.g. FROSTY_GOD"
+                    placeholder="FROST"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
                   />
                 </div>
@@ -175,7 +175,7 @@ export default function TempSignup() {
                     required
                     value={form.pubgUid}
                     onChange={handleChange}
-                    placeholder="e.g. 5123456789"
+                    placeholder="5123456789"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm font-mono focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
                   />
                 </div>
@@ -215,7 +215,7 @@ export default function TempSignup() {
                   required
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="yourname@gmail.com"
+                  placeholder="your@gmail.com"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
                 />
               </div>
