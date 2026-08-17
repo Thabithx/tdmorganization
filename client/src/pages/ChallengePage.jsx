@@ -164,7 +164,7 @@ const ChallengePage = () => {
           <div className="p-6 space-y-6">
             {/* Opponent Info */}
             <div className="flex items-center space-x-4 p-4 rounded-xl bg-frost-900/60 border border-frost-50/5">
-              <PlayerAvatar profile={{ ...opponent, currentRank: opponentRank }} size="md" />
+              <PlayerAvatar profile={{ ...opponent, currentRank: opponentRank }} size="md" objectPosition={opponent.avatarPosition} />
               <div>
                 <h3 className="font-heading font-bold text-lg text-[#F4FBFF] uppercase tracking-wider">{opponent.ign}</h3>
                 <div className="flex items-center space-x-2 mt-1">

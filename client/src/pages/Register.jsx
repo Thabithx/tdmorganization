@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import Card from '../components/ui/Card';
@@ -26,10 +26,10 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (isAuthenticated) {
-    navigate('/');
-    return null;
-  }
+  // Fix: use useEffect to avoid setState-during-render warning
+  useEffect(() => {
+    if (isAuthenticated) navigate('/', { replace: true });
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

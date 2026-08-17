@@ -18,6 +18,7 @@ const MyProfile = () => {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarPosition, setAvatarPosition] = useState(profile?.avatarPosition || 'center center');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -26,12 +27,10 @@ const MyProfile = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5MB.');
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5MB.'); return; }
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+    setAvatarPosition('center center'); // auto-center on new upload
     setError('');
   };
 
@@ -43,6 +42,7 @@ const MyProfile = () => {
       const fd = new FormData();
       fd.append('bio', formData.bio);
       fd.append('pubgUid', formData.pubgUid);
+      fd.append('avatarPosition', avatarPosition);
       if (formData.avatar && !avatarFile) fd.append('avatar', formData.avatar);
       if (avatarFile) fd.append('avatarFile', avatarFile);
 
@@ -100,10 +100,11 @@ const MyProfile = () => {
                   src={currentAvatar}
                   alt={profile?.ign}
                   className="w-20 h-20 rounded-2xl object-cover border-2 border-frost-50/20"
+                  style={{ objectPosition: avatarPosition }}
                   onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
                 />
               ) : (
-                <PlayerAvatar profile={profile} size="xl" />
+                <PlayerAvatar profile={profile} size="xl" objectPosition={avatarPosition} />
               )}
               {editing && (
                 <button
@@ -199,6 +200,38 @@ const MyProfile = () => {
                 />
                 <p className="text-secondary/50 text-[10px]">{formData.bio.length}/200</p>
               </div>
+
+              {/* Alignment controls — only shown when there's an avatar */}
+              {(currentAvatar || avatarFile) && (
+                <div className="space-y-2">
+                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">Photo Alignment</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { label: 'Top Left', val: 'left top' },
+                      { label: 'Top Center', val: 'center top' },
+                      { label: 'Top Right', val: 'right top' },
+                      { label: 'Center Left', val: 'left center' },
+                      { label: 'Center', val: 'center center' },
+                      { label: 'Center Right', val: 'right center' },
+                      { label: 'Bottom Left', val: 'left bottom' },
+                      { label: 'Bottom Center', val: 'center bottom' },
+                      { label: 'Bottom Right', val: 'right bottom' },
+                    ].map(({ label, val }) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setAvatarPosition(val)}
+                        className={`px-2 py-1.5 rounded-lg text-[10px] font-heading uppercase tracking-wide transition-all ${
+                          avatarPosition === val
+                            ? 'bg-frost-50/20 border border-frost-50/40 text-frost-50'
+                            : 'bg-frost-800/40 border border-frost-50/10 text-secondary hover:border-frost-50/20'
+                        }`}
+                      >{label}</button>
+                    ))}
+                  </div>
+                  <p className="text-secondary/40 text-[10px]">Select which part of your photo to show</p>
+                </div>
+              )}
 
               {error && (
                 <div className="flex items-center space-x-2 p-3 rounded-lg bg-red-950/30 border border-red-500/20 text-red-300 text-xs">

@@ -38,7 +38,7 @@ const RankingRow = ({ rankDoc }) => {
                 className="flex items-center space-x-3 cursor-pointer group"
                 onClick={() => navigate(`/players/${player._id}`)}
               >
-                <PlayerAvatar profile={player} size="sm" />
+                <PlayerAvatar profile={player} size="sm" objectPosition={player.avatarPosition} />
                 <div>
                   <h5 className="font-heading font-bold text-sm text-[#F4FBFF] group-hover:text-frost-50 transition-colors uppercase tracking-wider">
                     {player.ign}

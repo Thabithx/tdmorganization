@@ -34,7 +34,7 @@ const TopThreeCards = ({ rank1, rank2, rank3 }) => {
               <div key={player._id} className="w-full flex flex-col items-center text-center border-b border-frost-50/5 last:border-b-0 pb-4 last:pb-0">
                 {/* Avatar */}
                 <div className="relative group cursor-pointer" onClick={() => navigate(`/players/${player._id}`)}>
-                  <PlayerAvatar profile={player} size="lg" />
+                  <PlayerAvatar profile={player} size="lg" objectPosition={player.avatarPosition} />
                   <span className={`absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold border ${
                     rankNumber === 1 ? 'bg-[#FFD700] text-black border-[#FFD700]' :
                     rankNumber === 2 ? 'bg-[#C0C0C0] text-black border-[#C0C0C0]' :

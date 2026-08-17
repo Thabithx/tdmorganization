@@ -6,6 +6,7 @@ const playerProfileSchema = new mongoose.Schema({
   pubgUid: { type: String, required: true, unique: true, trim: true },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
   avatar: { type: String, default: '' },
+  avatarPosition: { type: String, default: 'center center' },
   bio: { type: String, default: '', maxlength: 300 },
   status: { type: String, enum: ['ACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
 }, { timestamps: true });

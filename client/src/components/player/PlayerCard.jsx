@@ -22,7 +22,7 @@ const PlayerCard = ({ player }) => {
 
         {/* Avatar */}
         <div className="cursor-pointer" onClick={() => navigate(`/players/${player._id}`)}>
-          <PlayerAvatar profile={player} size="md" />
+          <PlayerAvatar profile={player} size="md" objectPosition={player.avatarPosition} />
         </div>
 
         {/* IGN and Platform */}

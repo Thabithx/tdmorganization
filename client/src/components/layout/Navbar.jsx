@@ -17,18 +17,16 @@ const Navbar = () => {
       if (!isAuthenticated) return;
       try {
         const res = await notificationService.getNotifications();
-        if (res.success) {
-          setUnreadCount(res.data.unreadCount);
-        }
+        if (res.success) setUnreadCount(res.data.unreadCount);
       } catch (err) {
-        console.error('Failed to fetch unread notifications', err);
+        // Silently ignore 401 (expected when token expires). Log other errors.
+        if (err.response?.status !== 401) {
+          console.error('Failed to fetch notifications', err.message);
+        }
       }
     };
-
     fetchUnread();
-    if (isAuthenticated) {
-      interval = setInterval(fetchUnread, 30000); // poll every 30s
-    }
+    if (isAuthenticated) interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
@@ -58,6 +56,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <NavLink to="/rankings" className={navLinkClass}>Rankings</NavLink>
             <NavLink to="/players" className={navLinkClass}>Players</NavLink>
+            <NavLink to="/challenge-rules" className={navLinkClass}>Rules</NavLink>
             {isAuthenticated && (
               <NavLink to="/challenges" className={navLinkClass}>Challenges</NavLink>
             )}

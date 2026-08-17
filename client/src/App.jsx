@@ -6,6 +6,7 @@ import useAuth from './hooks/useAuth';
 // Layouts
 import Navbar from './components/layout/Navbar';
 import AdminLayout from './components/layout/AdminLayout';
+import Footer from './components/layout/Footer';
 
 // Public Pages
 import Home from './pages/Home';
@@ -14,6 +15,7 @@ import Players from './pages/Players';
 import PlayerProfile from './pages/PlayerProfile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ChallengeRules from './pages/ChallengeRules';
 
 // Authenticated Pages
 import ChallengePage from './pages/ChallengePage';
@@ -53,6 +55,7 @@ const MainLayoutWrapper = ({ children }) => {
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8">
         {children}
       </div>
+      <Footer />
     </div>
   );
 };
@@ -79,6 +82,7 @@ function App() {
         <Route path="/players/:id" element={<MainLayoutWrapper><PlayerProfile /></MainLayoutWrapper>} />
         <Route path="/login" element={<MainLayoutWrapper><Login /></MainLayoutWrapper>} />
         <Route path="/register" element={<MainLayoutWrapper><Register /></MainLayoutWrapper>} />
+        <Route path="/challenge-rules" element={<MainLayoutWrapper><ChallengeRules /></MainLayoutWrapper>} />
 
         {/* Protected routes */}
         <Route path="/challenge/:playerId" element={

@@ -84,7 +84,7 @@ const PlayerProfile = () => {
         <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <PlayerAvatar profile={{ ...profile, currentRank }} size="xl" />
+            <PlayerAvatar profile={{ ...profile, currentRank }} size="xl" objectPosition={profile.avatarPosition} />
           </div>
 
           {/* Info */}
