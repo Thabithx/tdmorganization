@@ -30,7 +30,11 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Fetch me error', err);
-        logout();
+        // Only log out if it is an authentication error (401 or 403).
+        // If it's a network error/server error (like Render cold starts), preserve the token.
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          logout();
+        }
       } finally {
         setLoading(false);
       }
