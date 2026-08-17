@@ -2,6 +2,22 @@ const PlayerProfile = require('../models/PlayerProfile');
 const Ranking = require('../models/Ranking');
 const statsService = require('../services/stats.service');
 const RankingHistory = require('../models/RankingHistory');
+const cloudinary = require('../config/cloudinary');
+
+const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1/frost_defaults/default_avatar';
+
+const uploadToCloudinary = (fileBuffer, folder = 'frost_avatars') => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }] },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
 
 const getPlayers = async (req, res, next) => {
   try {
@@ -70,11 +86,16 @@ const updateProfile = async (req, res, next) => {
     const profile = await PlayerProfile.findOne({ userId: req.user._id });
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found.' });
 
-    // Only allow updating safe fields
-    const allowed = ['avatar', 'bio'];
+    // Allow updating safe fields including pubgUid
+    const allowed = ['avatar', 'bio', 'pubgUid'];
     const updates = {};
     for (const key of allowed) {
-      if (req.body[key] !== undefined) updates[key] = req.body[key];
+      if (req.body[key] !== undefined && req.body[key] !== '') updates[key] = req.body[key];
+    }
+
+    // Handle avatar file upload if present
+    if (req.file) {
+      updates.avatar = await uploadToCloudinary(req.file.buffer);
     }
 
     Object.assign(profile, updates);

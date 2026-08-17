@@ -40,11 +40,20 @@ const seedData = async () => {
     console.log('Admin user created:', adminEmail);
 
     // 2. Create Users & Profiles
-    const mobileNames = ['FROSTY', 'RAVEN', 'XENO', 'ACE', 'RAZE', 'VEX', 'NOVA', 'SHADOW', 'VOID', 'ZERO', 'PULSE', 'STORM', 'BLADE', 'VIPER', 'APEX'];
+    const mobileNames = ['FROSTY', 'NEKROZ', 'RAVEN', 'XENO', 'ACE', 'RAZE', 'VEX', 'NOVA', 'SHADOW', 'VOID', 'ZERO', 'PULSE', 'STORM', 'BLADE', 'VIPER'];
     const ipadNames = ['CHRONO', 'PHANTOM', 'TITAN', 'HYDRA', 'KRAKEN', 'ORION', 'SPECTER', 'GHOST', 'ECLIPSE', 'AURA'];
     const emulatorNames = ['MATRIX', 'CYBORG', 'VECTOR', 'PIXEL', 'WRATH', 'GOLIATH', 'BEAST', 'SHIVER', 'HAVOC', 'RUST'];
 
     const allProfiles = [];
+
+    // PUBG-themed avatar seeds using DiceBear adventurer style (human characters)
+    const avatarStyles = [
+      'adventurer', 'adventurer-neutral', 'big-ears', 'big-ears-neutral'
+    ];
+    const getAvatar = (name) => {
+      const style = avatarStyles[Math.floor(Math.random() * avatarStyles.length)];
+      return `https://api.dicebear.com/7.x/${style}/svg?seed=${name}&backgroundColor=0d1117,0f172a,1e293b&backgroundType=gradientLinear`;
+    };
 
     // Helper to create users & profiles
     const createPlayersForPlatform = async (names, platform) => {
@@ -65,13 +74,14 @@ const seedData = async () => {
           ign: name,
           pubgUid: Math.floor(100000000 + Math.random() * 900000000).toString(),
           platform,
-          avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
+          avatar: getAvatar(name),
           bio: `Official TDM Player for FROST Network on ${platform}. Think you're better? Prove it.`
         });
 
         allProfiles.push(profile);
       }
     };
+
 
     console.log('Creating mobile players...');
     await createPlayersForPlatform(mobileNames, 'MOBILE');
@@ -88,30 +98,31 @@ const seedData = async () => {
     // 3. Seed Rankings
     console.log('Seeding Rankings...');
 
-    // MOBILE Top 10 with shared ranks
+    // MOBILE Top 10
     // Rank 1: FROSTY
-    // Rank 2: RAVEN
-    // Rank 3: XENO, ACE (Shared)
-    // Rank 4: RAZE
-    // Rank 5: VEX
-    // Rank 6: NOVA
-    // Rank 7: SHADOW, VOID, ZERO (Shared - max 3)
-    // Rank 8: PULSE
-    // Rank 9: STORM
-    // Rank 10: BLADE
-    // UNRANKED: VIPER, APEX
+    // Rank 2: NEKROZ
+    // Rank 3: RAVEN
+    // Rank 4: XENO, ACE (Shared)
+    // Rank 5: RAZE
+    // Rank 6: VEX
+    // Rank 7: NOVA
+    // Rank 8: SHADOW, VOID, ZERO (Shared - max 3)
+    // Rank 9: PULSE
+    // Rank 10: STORM
+    // UNRANKED: BLADE, VIPER
     const mobileRankingData = [
       { rank: 1, players: [mobileProfiles[0]._id] }, // FROSTY
-      { rank: 2, players: [mobileProfiles[1]._id] }, // RAVEN
-      { rank: 3, players: [mobileProfiles[2]._id, mobileProfiles[3]._id] }, // XENO, ACE
-      { rank: 4, players: [mobileProfiles[4]._id] }, // RAZE
-      { rank: 5, players: [mobileProfiles[5]._id] }, // VEX
-      { rank: 6, players: [mobileProfiles[6]._id] }, // NOVA
-      { rank: 7, players: [mobileProfiles[7]._id, mobileProfiles[8]._id, mobileProfiles[9]._id] }, // SHADOW, VOID, ZERO
-      { rank: 8, players: [mobileProfiles[10]._id] }, // PULSE
-      { rank: 9, players: [mobileProfiles[11]._id] }, // STORM
-      { rank: 10, players: [mobileProfiles[12]._id] } // BLADE
+      { rank: 2, players: [mobileProfiles[1]._id] }, // NEKROZ
+      { rank: 3, players: [mobileProfiles[2]._id] }, // RAVEN
+      { rank: 4, players: [mobileProfiles[3]._id, mobileProfiles[4]._id] }, // XENO, ACE
+      { rank: 5, players: [mobileProfiles[5]._id] }, // RAZE
+      { rank: 6, players: [mobileProfiles[6]._id] }, // VEX
+      { rank: 7, players: [mobileProfiles[7]._id] }, // NOVA
+      { rank: 8, players: [mobileProfiles[8]._id, mobileProfiles[9]._id, mobileProfiles[10]._id] }, // SHADOW, VOID, ZERO
+      { rank: 9, players: [mobileProfiles[11]._id] }, // PULSE
+      { rank: 10, players: [mobileProfiles[12]._id] } // STORM
     ];
+
 
     for (const r of mobileRankingData) {
       await Ranking.create({ platform: 'MOBILE', rank: r.rank, players: r.players });
@@ -140,11 +151,13 @@ const seedData = async () => {
     // 4. Seed Matches (FROSTY defeated RAVEN 5x, XENO 3x, ACE 2x)
     console.log('Seeding Matches & Stats...');
 
-    const frosty = mobileProfiles[0];
-    const raven = mobileProfiles[1];
-    const xeno = mobileProfiles[2];
-    const ace = mobileProfiles[3];
-    const raze = mobileProfiles[4];
+    const frosty = mobileProfiles[0];  // FROSTY
+    const nekroz = mobileProfiles[1];  // NEKROZ  
+    const raven = mobileProfiles[2];   // RAVEN
+    const xeno = mobileProfiles[3];    // XENO
+    const ace = mobileProfiles[4];     // ACE
+    const raze = mobileProfiles[5];    // RAZE
+
 
     // Helper to generate a completed match
     const createCompletedMatch = async (winner, loser, amount, winnerRank, loserRank) => {
