@@ -1,13 +1,13 @@
 import React from 'react';
 import { ShieldCheck, Calendar, Flame } from 'lucide-react';
 import Card from '../ui/Card';
-import { formatAmount, formatDate } from '../../utils/formatters';
+import { formatAmount, formatDate, getNetPrize } from '../../utils/formatters';
 
 const MatchCard = ({ match, currentUserId }) => {
   const challenger = match.challengerId;
   const defender = match.defenderId;
-  const isChallenger = currentUserId && challenger._id === currentUserId.toString();
-  const won = match.winnerId === (isChallenger ? challenger._id : defender._id);
+  const isChallenger = currentUserId && challenger._id?.toString() === currentUserId.toString();
+  const displayAmount = isChallenger ? match.challengeAmount : getNetPrize(match.challengeAmount);
 
   const getRankFormatted = (r) => (r !== null && r !== undefined ? `#${r}` : 'UNRANKED');
 
@@ -46,8 +46,8 @@ const MatchCard = ({ match, currentUserId }) => {
 
         {/* Amount & Date info */}
         <div className="flex flex-col sm:items-end sm:text-right space-y-1">
-          <span className="font-heading text-sm font-bold text-frost-50">
-            {formatAmount(match.challengeAmount)}
+          <span className="font-heading text-sm font-bold text-emerald-400">
+            {formatAmount(displayAmount)}
           </span>
           <div className="flex items-center text-secondary/60 text-[10px] space-x-1 uppercase tracking-wider">
             <Calendar className="w-3.5 h-3.5" />
@@ -74,13 +74,6 @@ const MatchCard = ({ match, currentUserId }) => {
           )}
         </div>
       </div>
-
-      {match.adminNotes && (
-        <div className="mt-4 p-3 rounded-lg bg-frost-800/40 border border-frost-50/5 text-secondary text-xs leading-relaxed">
-          <span className="font-bold text-frost-100">Admin Notes: </span>
-          {match.adminNotes}
-        </div>
-      )}
     </Card>
   );
 };

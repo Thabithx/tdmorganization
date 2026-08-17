@@ -72,11 +72,12 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     status: 'PENDING',
   });
 
-  // Notify defender
+  // Notify defender with 80% defender prize amount
+  const defenderPrize = Math.floor(amount * 0.80);
   await Notification.create({
     userId: defenderProfile.userId,
     type: 'CHALLENGE_RECEIVED',
-    message: `You have been challenged by ${challengerProfile.ign} for Rs. ${amount.toLocaleString()}.`,
+    message: `You have been challenged by ${challengerProfile.ign} for Rs. ${defenderPrize.toLocaleString()}.`,
     relatedEntity: 'Challenge',
     relatedId: challenge._id,
   });
