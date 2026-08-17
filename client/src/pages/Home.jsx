@@ -11,9 +11,11 @@ import Button from '../components/ui/Button';
 import { formatAmount, formatDate } from '../utils/formatters';
 import * as rankingService from '../services/ranking.service';
 import * as matchService from '../services/match.service';
+import useAuth from '../hooks/useAuth';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [platform, setPlatform] = useState('MOBILE');
   const [leaderboard, setLeaderboard] = useState([]);
   const [latestMatches, setLatestMatches] = useState([]);
@@ -95,14 +97,25 @@ const Home = () => {
               <Trophy className="w-5 h-5" />
               <span>VIEW RANKINGS</span>
             </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => navigate('/register')}
-              className="w-full sm:w-auto"
-            >
-              JOIN THE ARENA
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate('/challenges')}
+                className="w-full sm:w-auto"
+              >
+                VIEW MY CHALLENGES
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate('/register')}
+                className="w-full sm:w-auto"
+              >
+                JOIN THE ARENA
+              </Button>
+            )}
           </div>
         </div>
       </section>
