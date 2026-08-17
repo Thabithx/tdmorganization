@@ -4,7 +4,7 @@ const statsService = require('../services/stats.service');
 const RankingHistory = require('../models/RankingHistory');
 const cloudinary = require('../config/cloudinary');
 
-const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786951776/frost_defaults/default_avatar.jpg';
+const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png';
 
 const uploadToCloudinary = (fileBuffer, folder = 'frost_avatars') => {
   return new Promise((resolve, reject) => {

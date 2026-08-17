@@ -5,8 +5,8 @@ const playerProfileSchema = new mongoose.Schema({
   ign: { type: String, required: true, unique: true, trim: true },
   pubgUid: { type: String, required: true, unique: true, trim: true },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
-  avatar: { type: String, default: 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786951776/frost_defaults/default_avatar.jpg' },
-  avatarPosition: { type: String, default: 'center center' },
+  avatar: { type: String, default: 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png' },
+  avatarPosition: { type: String, default: 'center top' },
   bio: { type: String, default: '', maxlength: 300 },
   status: { type: String, enum: ['ACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
 }, { timestamps: true });

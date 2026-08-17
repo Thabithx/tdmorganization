@@ -18,7 +18,7 @@ const MyProfile = () => {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [avatarPosition, setAvatarPosition] = useState(profile?.avatarPosition || 'center center');
+  const [avatarPosition, setAvatarPosition] = useState(profile?.avatarPosition || 'center top');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
