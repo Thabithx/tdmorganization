@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Swords, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Swords, AlertTriangle, CheckCircle, ArrowLeft, Trophy, DollarSign } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { RankBadge, PlatformBadge } from '../components/ui/Badge';
@@ -9,7 +9,7 @@ import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import useAuth from '../hooks/useAuth';
 import * as playerService from '../services/player.service';
 import * as challengeService from '../services/challenge.service';
-import { formatAmount } from '../utils/formatters';
+import { formatAmount, getNetPrize, getPlatformFee } from '../utils/formatters';
 import { validateChallengeAmount, getMinimumChallengeAmount } from '../utils/validators';
 
 const ChallengePage = () => {
@@ -57,6 +57,8 @@ const ChallengePage = () => {
   const minimumAmount = getMinimumChallengeAmount(opponentRank);
   const amountNum = parseFloat(amount) || 0;
   const validation = validateChallengeAmount(amountNum, opponentRank);
+  const winnerNetPrize = getNetPrize(amountNum);
+  const platformFee = getPlatformFee(amountNum);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -179,7 +181,7 @@ const ChallengePage = () => {
                 {/* Amount Input */}
                 <div className="space-y-2">
                   <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
-                    Challenge Amount (LKR)
+                    Challenge Stake Amount (LKR)
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 font-heading font-bold text-frost-50/60 text-sm">Rs.</span>
@@ -204,10 +206,29 @@ const ChallengePage = () => {
                   )}
                 </div>
 
+                {/* Prize Breakdown */}
+                {amountNum >= minimumAmount && (
+                  <div className="p-4 rounded-xl bg-[#06090F] border border-[#8BE3FF]/15 space-y-2">
+                    <p className="text-[#8BE3FF] text-[10px] font-heading font-bold uppercase tracking-widest">Prize Pool Breakdown</p>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-secondary">Challenger Total Stake:</span>
+                      <span className="text-[#F4FBFF] font-bold">{formatAmount(amountNum)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold">
+                      <span className="text-emerald-400">Winner Net Payout (80%):</span>
+                      <span className="text-emerald-400 font-heading font-bold">{formatAmount(winnerNetPrize)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-secondary/70">Platform Fee (20%):</span>
+                      <span className="text-secondary/70">{formatAmount(platformFee)}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="bg-frost-900/60 rounded-xl p-4 border border-frost-50/5 text-xs text-secondary space-y-1.5">
                   <p>• Payment is only required <strong className="text-frost-100">after</strong> your opponent accepts.</p>
                   <p>• If rejected, no payment is taken.</p>
-                  <p>• The amount is fixed after challenge creation.</p>
+                  <p>• The winner receives <strong className="text-emerald-400">80%</strong> net payout of the stake.</p>
                 </div>
 
                 <Button
@@ -237,8 +258,12 @@ const ChallengePage = () => {
                     <RankBadge rank={opponentRank} size="sm" />
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-frost-50/5">
-                    <span className="text-secondary text-sm">Challenge Amount</span>
+                    <span className="text-secondary text-sm">Challenger Stake</span>
                     <span className="font-heading text-lg font-extrabold text-frost-50">{formatAmount(amountNum)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-frost-50/5">
+                    <span className="text-emerald-400 text-sm font-semibold">Winner Net Payout (80%)</span>
+                    <span className="font-heading text-base font-bold text-emerald-400">{formatAmount(winnerNetPrize)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3">
                     <span className="text-secondary text-sm">Payment</span>

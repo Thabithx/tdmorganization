@@ -3,6 +3,16 @@ export const formatAmount = (num) => {
   return `Rs. ${parseFloat(num).toLocaleString('en-US')}`;
 };
 
+export const getNetPrize = (amount) => {
+  if (!amount) return 0;
+  return Math.floor(parseFloat(amount) * 0.80);
+};
+
+export const getPlatformFee = (amount) => {
+  if (!amount) return 0;
+  return Math.floor(parseFloat(amount) * 0.20);
+};
+
 export const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);

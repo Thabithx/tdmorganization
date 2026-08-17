@@ -3,7 +3,7 @@ import { Swords, CreditCard, XCircle, CheckCircle, Clock } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { StatusBadge, PlatformBadge } from '../ui/Badge';
-import { formatAmount, formatDate } from '../../utils/formatters';
+import { formatAmount, formatDate, getNetPrize } from '../../utils/formatters';
 import useAuth from '../../hooks/useAuth';
 import * as paymentService from '../../services/payment.service';
 
@@ -11,8 +11,9 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
   const { profile } = useAuth();
   const [loadingAction, setLoadingAction] = useState(false);
 
-  const isChallenger = challenge.challengerId._id.toString() === profile?._id.toString();
+  const isChallenger = challenge.challengerId?._id?.toString() === profile?._id?.toString();
   const opponent = isChallenger ? challenge.defenderId : challenge.challengerId;
+  const winnerPrize = getNetPrize(challenge.challengeAmount);
 
   const handleAccept = async () => {
     setLoadingAction(true);
@@ -35,8 +36,6 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
     try {
       const res = await paymentService.createPayment(challenge._id);
       if (res.success && res.data.payhereUrl) {
-        // Redirect to PayHere gateway integration
-        // We will build a checkout form and submit it dynamically
         const { payhereUrl, payload } = res.data;
         const form = document.createElement('form');
         form.method = 'POST';
@@ -82,11 +81,16 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
             UID: {opponent?.pubgUid}
           </p>
 
-          <div className="flex items-center space-x-3 mt-3">
+          <div className="flex flex-wrap items-center gap-2 mt-3">
             <PlatformBadge platform={challenge.platform} />
             <span className="font-heading text-sm font-bold text-frost-50">
-              {formatAmount(challenge.challengeAmount)}
+              Stake: {formatAmount(challenge.challengeAmount)}
             </span>
+          </div>
+
+          <div className="mt-2 p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/10 flex items-center justify-between">
+            <span className="text-[#4A5D6E] text-[11px] uppercase font-heading font-semibold">Winner Net Payout (80%):</span>
+            <span className="text-emerald-400 font-heading font-bold text-xs">{formatAmount(winnerPrize)}</span>
           </div>
 
           <p className="text-secondary/50 text-[10px] mt-2">
@@ -138,7 +142,7 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
             className="flex items-center space-x-1.5 w-full justify-center"
           >
             <CreditCard className="w-4 h-4" />
-            <span>PAY Rs. {challenge.challengeAmount.toLocaleString()} NOW</span>
+            <span>PAY {formatAmount(challenge.challengeAmount)} NOW</span>
           </Button>
         )}
       </div>

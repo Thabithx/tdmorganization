@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { CreditCard, CheckCircle2, DollarSign, TrendingUp } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
-import { formatAmount, formatDate } from '../../utils/formatters';
+import { formatAmount, formatDate, getPlatformFee, getNetPrize } from '../../utils/formatters';
 import * as adminService from '../../services/admin.service';
 
 const AdminPayments = () => {
@@ -45,10 +45,37 @@ const AdminPayments = () => {
 
   const STATUS_FILTERS = ['ALL', 'PENDING', 'CONFIRMED', 'FAILED', 'REFUNDED'];
 
+  const confirmedPayments = payments.filter(p => p.status === 'CONFIRMED');
+  const totalGrossStakes = confirmedPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
+  const totalAdminProfit = getPlatformFee(totalGrossStakes);
+  const totalWinnerPayouts = getNetPrize(totalGrossStakes);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-heading font-extrabold text-[#F4FBFF] uppercase tracking-wider">PAYMENT MANAGEMENT</h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-heading font-extrabold text-[#F4FBFF] uppercase tracking-wider">PAYMENT & REVENUE MANAGEMENT</h1>
+          <p className="text-[#4A5D6E] text-xs font-semibold uppercase tracking-widest mt-1">20% Platform Revenue Fee & Financial Transactions</p>
+        </div>
+      </div>
 
+      {/* Financial Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card variant="default" className="p-5 border-frost-50/5">
+          <p className="text-[#4A5D6E] text-xs font-heading font-semibold uppercase tracking-widest mb-1">Total Confirmed Stakes</p>
+          <p className="font-heading text-2xl font-extrabold text-[#F4FBFF]">{formatAmount(totalGrossStakes)}</p>
+        </Card>
+        <Card variant="default" className="p-5 border-[#8BE3FF]/20 bg-[#8BE3FF]/5">
+          <p className="text-[#8BE3FF] text-xs font-heading font-bold uppercase tracking-widest mb-1">Platform Admin Profit (20%)</p>
+          <p className="font-heading text-2xl font-black text-[#8BE3FF]">{formatAmount(totalAdminProfit)}</p>
+        </Card>
+        <Card variant="default" className="p-5 border-emerald-500/20 bg-emerald-950/10">
+          <p className="text-emerald-400 text-xs font-heading font-semibold uppercase tracking-widest mb-1">Player Winner Net Payouts (80%)</p>
+          <p className="font-heading text-2xl font-extrabold text-emerald-400">{formatAmount(totalWinnerPayouts)}</p>
+        </Card>
+      </div>
+
+      {/* Filters */}
       <div className="flex items-center space-x-2 flex-wrap gap-y-2">
         {STATUS_FILTERS.map(s => (
           <button
@@ -77,8 +104,9 @@ const AdminPayments = () => {
                 <tr className="border-b border-frost-50/10 bg-frost-800/40 text-secondary text-xs uppercase font-heading tracking-widest">
                   <th className="px-4 py-3 text-left">Challenge</th>
                   <th className="px-4 py-3 text-left">Payer</th>
-                  <th className="px-4 py-3 text-left">Amount</th>
-                  <th className="px-4 py-3 text-left">PayHere Order ID</th>
+                  <th className="px-4 py-3 text-left">Total Stake</th>
+                  <th className="px-4 py-3 text-left">Winner Payout (80%)</th>
+                  <th className="px-4 py-3 text-left">Admin Profit (20%)</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Date</th>
                   <th className="px-4 py-3 text-right">Actions</th>
@@ -94,7 +122,8 @@ const AdminPayments = () => {
                     </td>
                     <td className="px-4 py-3 font-heading font-bold text-sm text-[#F4FBFF] uppercase">{p.payerId?.ign}</td>
                     <td className="px-4 py-3 font-heading font-bold text-frost-50">{formatAmount(p.amount)}</td>
-                    <td className="px-4 py-3 text-secondary text-xs font-mono">{p.payhereOrderId || '—'}</td>
+                    <td className="px-4 py-3 font-heading font-bold text-emerald-400">{formatAmount(getNetPrize(p.amount))}</td>
+                    <td className="px-4 py-3 font-heading font-bold text-[#8BE3FF]">{formatAmount(getPlatformFee(p.amount))}</td>
                     <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
                     <td className="px-4 py-3 text-secondary text-xs">{formatDate(p.createdAt)}</td>
                     <td className="px-4 py-3 text-right">
