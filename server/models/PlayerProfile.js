@@ -11,7 +11,6 @@ const playerProfileSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 playerProfileSchema.index({ ign: 'text' });
-playerProfileSchema.index({ pubgUid: 1 });
 playerProfileSchema.index({ platform: 1 });
 
 module.exports = mongoose.model('PlayerProfile', playerProfileSchema);
