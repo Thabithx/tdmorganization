@@ -206,24 +206,9 @@ const ChallengePage = () => {
                   )}
                 </div>
 
-                {/* Prize Breakdown */}
-                {amountNum >= minimumAmount && (
-                  <div className="p-4 rounded-xl bg-[#06090F] border border-[#8BE3FF]/15 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-secondary">Challenge Stake:</span>
-                      <span className="text-[#F4FBFF] font-bold">{formatAmount(amountNum)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs font-semibold">
-                      <span className="text-emerald-400">Winner Prize:</span>
-                      <span className="text-emerald-400 font-heading font-bold">{formatAmount(winnerNetPrize)}</span>
-                    </div>
-                  </div>
-                )}
-
                 <div className="bg-frost-900/60 rounded-xl p-4 border border-frost-50/5 text-xs text-secondary space-y-1.5">
                   <p>• Payment is only required <strong className="text-frost-100">after</strong> your opponent accepts.</p>
                   <p>• If rejected, no payment is taken.</p>
-                  <p>• Winner receives the official prize reward upon match completion.</p>
                 </div>
 
                 <Button
@@ -253,12 +238,8 @@ const ChallengePage = () => {
                     <RankBadge rank={opponentRank} size="sm" />
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-frost-50/5">
-                    <span className="text-secondary text-sm">Challenger Stake</span>
+                    <span className="text-secondary text-sm">Challenge Amount</span>
                     <span className="font-heading text-lg font-extrabold text-frost-50">{formatAmount(amountNum)}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-3 border-b border-frost-50/5">
-                    <span className="text-emerald-400 text-sm font-semibold">Winner Prize</span>
-                    <span className="font-heading text-base font-bold text-emerald-400">{formatAmount(winnerNetPrize)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3">
                     <span className="text-secondary text-sm">Payment</span>

@@ -94,7 +94,7 @@ const Register = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  placeholder="cool_name"
+                  placeholder="frost"
                   className={inputClass}
                 />
               </div>
@@ -106,7 +106,7 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
+                  placeholder="you@gmail.com"
                   className={inputClass}
                 />
               </div>
@@ -120,7 +120,7 @@ const Register = () => {
                 required
                 value={formData.ign}
                 onChange={handleChange}
-                placeholder="Your exact PUBG Mobile IGN"
+                placeholder="RDHxFROST"
                 className={inputClass}
               />
             </div>

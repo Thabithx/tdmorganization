@@ -13,7 +13,9 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
 
   const isChallenger = challenge.challengerId?._id?.toString() === profile?._id?.toString();
   const opponent = isChallenger ? challenge.defenderId : challenge.challengerId;
-  const winnerPrize = getNetPrize(challenge.challengeAmount);
+
+  // Defender sees 720 (net prize), Challenger sees 900 (stake amount)
+  const displayAmount = isChallenger ? challenge.challengeAmount : getNetPrize(challenge.challengeAmount);
 
   const handleAccept = async () => {
     setLoadingAction(true);
@@ -59,7 +61,7 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
   };
 
   return (
-    <Card variant="default" className="p-5 border-frost-50/5 flex flex-col justify-between h-full min-h-[180px]">
+    <Card variant="default" className="p-5 border-frost-50/5 flex flex-col justify-between h-full min-h-[170px]">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -81,16 +83,11 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
             UID: {opponent?.pubgUid}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2 mt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-frost-50/5">
             <PlatformBadge platform={challenge.platform} />
-            <span className="font-heading text-sm font-bold text-frost-50">
-              Stake: {formatAmount(challenge.challengeAmount)}
+            <span className="font-heading text-base font-bold text-emerald-400">
+              {isChallenger ? 'Challenge Amount:' : 'Prize:'} {formatAmount(displayAmount)}
             </span>
-          </div>
-
-          <div className="mt-2 p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/10 flex items-center justify-between">
-            <span className="text-[#4A5D6E] text-[11px] uppercase font-heading font-semibold">Winner Prize:</span>
-            <span className="text-emerald-400 font-heading font-bold text-xs">{formatAmount(winnerPrize)}</span>
           </div>
 
           <p className="text-secondary/50 text-[10px] mt-2">
@@ -100,7 +97,7 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
       </div>
 
       {/* Actions */}
-      <div className="mt-5 pt-3 border-t border-frost-50/5 flex justify-end space-x-2">
+      <div className="mt-4 pt-3 border-t border-frost-50/5 flex justify-end space-x-2">
         {!isChallenger && challenge.status === 'PENDING' && (
           <>
             <Button

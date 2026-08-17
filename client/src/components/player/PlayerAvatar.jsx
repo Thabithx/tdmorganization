@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png';
+const DEFAULT_AVATAR = '/default_avatar.png';
 
 const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = 'center top' }) => {
   const ign = profile?.ign || 'P';
@@ -39,4 +39,3 @@ const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = '
 };
 
 export default PlayerAvatar;
-
