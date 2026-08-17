@@ -155,6 +155,13 @@ const Navbar = () => {
           >
             Players
           </NavLink>
+          <NavLink
+            to="/challenge-rules"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block text-secondary hover:text-frost-50 py-2 font-heading font-semibold uppercase tracking-wider"
+          >
+            Rules
+          </NavLink>
           {isAuthenticated && (
             <NavLink
               to="/challenges"
