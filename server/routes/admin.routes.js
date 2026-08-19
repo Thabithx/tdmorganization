@@ -80,4 +80,75 @@ router.post('/notifications/send', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Email all players requesting WhatsApp number
+router.post('/email-whatsapp-request', async (req, res, next) => {
+  try {
+    const nodemailer = require('nodemailer');
+    const User = require('../models/User');
+
+    const GMAIL_USER     = process.env.GMAIL_USER;
+    const GMAIL_APP_PASS = process.env.GMAIL_APP_PASS;
+    const YOUR_WHATSAPP  = process.env.YOUR_WHATSAPP || '+94784175594';
+
+    if (!GMAIL_USER || !GMAIL_APP_PASS) {
+      return res.status(500).json({ success: false, message: 'Email credentials not configured on server.' });
+    }
+
+    const players = await User.find({ role: 'PLAYER' }).select('email username');
+    if (players.length === 0) {
+      return res.json({ success: true, message: 'No players found to email.', sent: 0 });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASS },
+    });
+
+    let sent = 0, failed = 0, failedEmails = [];
+
+    for (const player of players) {
+      try {
+        await transporter.sendMail({
+          from: `FROST Organization <${GMAIL_USER}>`,
+          to: player.email,
+          subject: '❄️ FROST — Please Send Us Your WhatsApp Number',
+          html: `
+            <div style="font-family:Arial,sans-serif;background:#040810;color:#F4FBFF;padding:32px;border-radius:12px;max-width:560px;margin:auto;">
+              <div style="text-align:center;margin-bottom:24px;">
+                <h1 style="color:#8BE3FF;font-size:28px;letter-spacing:6px;margin:0;">❄️ FROST</h1>
+                <p style="color:#4A5D6E;font-size:11px;letter-spacing:3px;margin:4px 0 0;">COMPETITIVE NETWORK</p>
+              </div>
+              <p style="color:#F4FBFF;font-size:15px;">Hey <strong>${player.username || 'Player'}</strong>,</p>
+              <p style="color:#8A9AAD;font-size:14px;line-height:1.7;">
+                You're registered on the <strong style="color:#8BE3FF;">FROST Organization</strong> platform.
+                We've updated our system and now require a <strong style="color:#F4FBFF;">WhatsApp number</strong>
+                from every member so we can coordinate matches and keep you updated.
+              </p>
+              <div style="background:#0B101A;border:1px solid #1A2A3A;border-radius:10px;padding:20px;margin:24px 0;text-align:center;">
+                <p style="color:#4A5D6E;font-size:12px;letter-spacing:2px;margin:0 0 8px;text-transform:uppercase;">Send your WhatsApp number to</p>
+                <a href="https://wa.me/${YOUR_WHATSAPP.replace(/\D/g,'')}" style="color:#8BE3FF;font-size:22px;font-weight:bold;text-decoration:none;">${YOUR_WHATSAPP}</a>
+                <p style="color:#4A5D6E;font-size:12px;margin:8px 0 0;">Message us on WhatsApp with your IGN</p>
+              </div>
+              <p style="color:#8A9AAD;font-size:13px;line-height:1.7;">
+                Simply send: <strong style="color:#F4FBFF;">Your IGN + WhatsApp Number</strong>
+              </p>
+              <p style="color:#8A9AAD;font-size:13px;">Stay tuned — the FROST TDM ranking is coming soon. ❄️</p>
+              <hr style="border:none;border-top:1px solid #1A2A3A;margin:24px 0;"/>
+              <p style="color:#2A3D4E;font-size:11px;text-align:center;letter-spacing:2px;text-transform:uppercase;">© FROST COMPETITIVE NETWORK</p>
+            </div>
+          `,
+        });
+        sent++;
+      } catch (e) {
+        failed++;
+        failedEmails.push(player.email);
+      }
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    res.json({ success: true, total: players.length, sent, failed, failedEmails });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
+
