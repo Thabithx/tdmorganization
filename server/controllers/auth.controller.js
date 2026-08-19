@@ -7,9 +7,9 @@ const generateToken = (id) =>
 
 const register = async (req, res, next) => {
   try {
-    const { username, email, password, ign, pubgUid, platform } = req.body;
+    const { username, email, password, ign, pubgUid, platform, whatsapp } = req.body;
 
-    if (!username || !email || !password || !ign || !pubgUid || !platform) {
+    if (!username || !email || !password || !ign || !pubgUid || !platform || !whatsapp) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
     if (!['MOBILE', 'IPAD', 'EMULATOR'].includes(platform)) {
@@ -20,7 +20,7 @@ const register = async (req, res, next) => {
     }
 
     const user = await User.create({ username, email, passwordHash: password, role: 'PLAYER' });
-    const profile = await PlayerProfile.create({ userId: user._id, ign, pubgUid, platform });
+    const profile = await PlayerProfile.create({ userId: user._id, ign, pubgUid, platform, whatsapp });
 
     const token = generateToken(user._id);
     res.status(201).json({ success: true, data: { token, user, profile } });

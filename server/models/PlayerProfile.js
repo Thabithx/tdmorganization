@@ -5,6 +5,7 @@ const playerProfileSchema = new mongoose.Schema({
   ign: { type: String, required: true, unique: true, trim: true },
   pubgUid: { type: String, required: true, unique: true, trim: true },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  whatsapp: { type: String, required: true, trim: true },
   avatar: { type: String, default: '/default_avatar.png' },
   avatarPosition: { type: String, default: 'center top' },
   bio: { type: String, default: '', maxlength: 300 },

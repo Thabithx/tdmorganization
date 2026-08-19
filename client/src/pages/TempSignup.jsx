@@ -27,6 +27,7 @@ export default function TempSignup() {
     ign: '',
     pubgUid: '',
     platform: 'MOBILE',
+    whatsapp: '',
   });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function TempSignup() {
         ign: form.ign,
         pubgUid: form.pubgUid,
         platform: form.platform,
+        whatsapp: form.whatsapp,
       });
 
       if (res.success) {
@@ -179,6 +181,22 @@ export default function TempSignup() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm font-mono focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
                   />
                 </div>
+              </div>
+
+              {/* WhatsApp Number */}
+              <div>
+                <label className="text-[10px] font-heading font-bold text-[#4A5D6E] uppercase tracking-widest block mb-1">
+                  WhatsApp Number
+                </label>
+                <input
+                  type="tel"
+                  name="whatsapp"
+                  required
+                  value={form.whatsapp}
+                  onChange={handleChange}
+                  placeholder="e.g. +94771234567"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
+                />
               </div>
 
               {/* Platform Selector */}

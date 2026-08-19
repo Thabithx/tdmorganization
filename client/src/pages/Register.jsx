@@ -21,6 +21,7 @@ const Register = () => {
     ign: '',
     pubgUid: '',
     platform: 'MOBILE',
+    whatsapp: '',
   });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -121,6 +122,19 @@ const Register = () => {
                 value={formData.ign}
                 onChange={handleChange}
                 placeholder="RDHxFROST"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-1.5 col-span-2">
+              <label className={labelClass}>WhatsApp Number</label>
+              <input
+                type="tel"
+                name="whatsapp"
+                required
+                value={formData.whatsapp}
+                onChange={handleChange}
+                placeholder="e.g. +94771234567"
                 className={inputClass}
               />
             </div>
