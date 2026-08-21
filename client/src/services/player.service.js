@@ -11,11 +11,7 @@ export const getPlayerById = async (id) => {
 };
 
 export const updateProfile = async (profileData) => {
-  // If it's a FormData (file upload), let axios set content-type automatically
-  const isFormData = profileData instanceof FormData;
-  const res = await api.put('/players', profileData, {
-    headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
-  });
+  const res = await api.put('/players', profileData);
   return res.data;
 };
 
