@@ -45,6 +45,22 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     );
   }
 
+  // Anti-Abuse: Maximum 2 challenges against the same opponent within a rolling 7-day period (excluding CANCELLED)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const challengeCountAgainstOpponent = await Challenge.countDocuments({
+    challengerId: challengerProfile._id,
+    defenderId: defenderProfile._id,
+    createdAt: { $gte: sevenDaysAgo },
+    status: { $ne: 'CANCELLED' }
+  });
+
+  if (challengeCountAgainstOpponent >= 2) {
+    throw Object.assign(
+      new Error("You have already challenged this player twice within the last 7 days. You can challenge them again once the oldest challenge falls outside the 7-day window."),
+      { statusCode: 400 }
+    );
+  }
+
   // Duplicate challenge check — block if active challenge exists between these two players
   const existingChallenge = await Challenge.findOne({
     $or: [
@@ -129,15 +145,37 @@ const rejectChallenge = async ({ challengeId, defenderUserId }) => {
   if (!defenderProfile) throw Object.assign(new Error('Defender profile not found.'), { statusCode: 404 });
 
   const challenge = await Challenge.findById(challengeId)
-    .populate('challengerId', 'ign userId');
+    .populate('challengerId', 'ign userId')
+    .populate('defenderId', 'ign userId');
   if (!challenge) throw Object.assign(new Error('Challenge not found.'), { statusCode: 404 });
 
-  if (challenge.defenderId.toString() !== defenderProfile._id.toString()) {
+  if (challenge.defenderId._id.toString() !== defenderProfile._id.toString()) {
     throw Object.assign(new Error('You are not the defender of this challenge.'), { statusCode: 403 });
   }
 
   if (challenge.status !== 'PENDING') {
     throw Object.assign(new Error(`Challenge cannot be rejected in ${challenge.status} state.`), { statusCode: 400 });
+  }
+
+  // Anti-Abuse Decline Limit Check: Top 10 players cannot reject more than 3 incoming challenges in rolling 7 days
+  const defenderRankDoc = await Ranking.findOne({ platform: challenge.platform, players: defenderProfile._id });
+  if (defenderRankDoc && defenderRankDoc.rank <= 10) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const declineCount = await Challenge.countDocuments({
+      defenderId: defenderProfile._id,
+      status: { $in: ['REJECTED', 'EXPIRED'] },
+      $or: [
+        { rejectedAt: { $gte: sevenDaysAgo } },
+        { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+      ]
+    });
+
+    if (declineCount >= 3) {
+      throw Object.assign(
+        new Error("You have reached your maximum of 3 declined challenges within the last 7 days. You must accept this challenge or allow it to expire."),
+        { statusCode: 400 }
+      );
+    }
   }
 
   challenge.status = 'REJECTED';
@@ -156,4 +194,39 @@ const rejectChallenge = async ({ challengeId, defenderUserId }) => {
   return challenge;
 };
 
-module.exports = { createChallenge, acceptChallenge, rejectChallenge };
+/**
+ * Cancel a challenge (by challenger).
+ */
+const cancelChallenge = async ({ challengeId, challengerUserId }) => {
+  const challengerProfile = await PlayerProfile.findOne({ userId: challengerUserId });
+  if (!challengerProfile) throw Object.assign(new Error('Challenger profile not found.'), { statusCode: 404 });
+
+  const challenge = await Challenge.findById(challengeId)
+    .populate('challengerId', 'ign userId')
+    .populate('defenderId', 'ign userId');
+  if (!challenge) throw Object.assign(new Error('Challenge not found.'), { statusCode: 404 });
+
+  if (challenge.challengerId._id.toString() !== challengerProfile._id.toString()) {
+    throw Object.assign(new Error('You are not the challenger of this challenge.'), { statusCode: 403 });
+  }
+
+  if (challenge.status !== 'PENDING' && challenge.status !== 'PAYMENT_PENDING') {
+    throw Object.assign(new Error(`Challenge cannot be cancelled in ${challenge.status} state.`), { statusCode: 400 });
+  }
+
+  challenge.status = 'CANCELLED';
+  await challenge.save();
+
+  // Notify defender
+  await Notification.create({
+    userId: challenge.defenderId.userId,
+    type: 'CHALLENGE_CANCELLED',
+    message: `${challengerProfile.ign} cancelled their challenge.`,
+    relatedEntity: 'Challenge',
+    relatedId: challenge._id,
+  });
+
+  return challenge;
+};
+
+module.exports = { createChallenge, acceptChallenge, rejectChallenge, cancelChallenge };

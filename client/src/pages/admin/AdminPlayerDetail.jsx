@@ -237,6 +237,14 @@ export default function AdminPlayerDetail() {
             Registered: <span className="text-[#8A9AAD]">{formatDate(profile.createdAt)}</span>
           </span>
           <span className="text-[#4A5D6E] text-xs">
+            WhatsApp: <span className="text-[#8A9AAD] font-bold">{profile.whatsapp || 'None'}</span>
+          </span>
+          {currentRank && currentRank <= 10 && (
+            <span className="text-[#4A5D6E] text-xs">
+              Decline Rate: <span className={data.declinesLast7Days >= 3 ? 'text-rose-400 font-extrabold' : 'text-[#8BE3FF] font-bold'}>{data.declinesLast7Days} / 3 declines (rolling 7 days)</span>
+            </span>
+          )}
+          <span className="text-[#4A5D6E] text-xs">
             DB ID: <span className="text-[#8A9AAD] font-mono text-[10px]">{profile._id}</span>
           </span>
         </div>

@@ -11,7 +11,7 @@ const FILTER_TABS = [
   { label: 'Outgoing', role: 'outgoing' },
 ];
 
-const STATUS_TABS = ['ALL', 'PENDING', 'PAYMENT_PENDING', 'MATCH_ACTIVE', 'COMPLETED', 'REJECTED'];
+const STATUS_TABS = ['ALL', 'PENDING', 'PAYMENT_PENDING', 'MATCH_ACTIVE', 'COMPLETED', 'REJECTED', 'EXPIRED', 'CANCELLED'];
 
 const Challenges = () => {
   const [challenges, setChallenges] = useState([]);
@@ -19,6 +19,7 @@ const Challenges = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [error, setError] = useState('');
+  const [meta, setMeta] = useState({ declineCount: 0, isRankedTop10: false });
 
   const fetchChallenges = useCallback(async () => {
     setLoading(true);
@@ -27,8 +28,12 @@ const Challenges = () => {
       const params = { role: roleFilter };
       if (statusFilter !== 'ALL') params.status = statusFilter;
       const res = await challengeService.getChallenges(params);
-      if (res.success) setChallenges(res.data);
-      else setError('Failed to load challenges.');
+      if (res.success) {
+        setChallenges(res.data);
+        if (res.meta) setMeta(res.meta);
+      } else {
+        setError('Failed to load challenges.');
+      }
     } catch {
       setError('Unable to load challenges.');
     } finally {
@@ -44,6 +49,7 @@ const Challenges = () => {
     try {
       if (action === 'accept') await challengeService.acceptChallenge(challengeId);
       if (action === 'reject') await challengeService.rejectChallenge(challengeId);
+      if (action === 'cancel') await challengeService.cancelChallenge(challengeId);
       fetchChallenges();
     } catch (err) {
       alert(err.response?.data?.message || 'Action failed.');
@@ -59,6 +65,25 @@ const Challenges = () => {
         </h1>
         <p className="text-secondary text-sm">Manage your incoming and outgoing challenges.</p>
       </div>
+
+      {/* Decline limit info for Ranked Top 10 */}
+      {meta.isRankedTop10 && roleFilter === 'incoming' && (
+        <div className="p-4 rounded-xl bg-frost-800/60 border border-frost-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h4 className="text-xs font-heading font-bold text-frost-50 uppercase tracking-widest">
+              Weekly Challenge Decline Status
+            </h4>
+            <p className="text-[11px] text-secondary mt-0.5">
+              Ranked Top 10 players can decline a maximum of 3 challenges every 7 rolling days (includes expired ones).
+            </p>
+          </div>
+          <div className="flex items-center space-x-2 font-heading font-extrabold uppercase text-sm">
+            <span className={meta.declineCount >= 3 ? 'text-rose-500' : 'text-emerald-400'}>
+              {meta.declineCount} / 3 declines used
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Role filter tabs */}
       <div className="flex space-x-1 p-1 rounded-xl bg-frost-800/80 border border-frost-50/10 max-w-xs">

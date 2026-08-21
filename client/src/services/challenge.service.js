@@ -24,3 +24,8 @@ export const rejectChallenge = async (id) => {
   const res = await api.post(`/challenges/${id}/reject`);
   return res.data;
 };
+
+export const cancelChallenge = async (id) => {
+  const res = await api.post(`/challenges/${id}/cancel`);
+  return res.data;
+};

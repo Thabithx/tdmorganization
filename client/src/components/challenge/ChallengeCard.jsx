@@ -33,6 +33,14 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
     setLoadingAction(false);
   };
 
+  const handleCancel = async () => {
+    setLoadingAction(true);
+    try {
+      await onStatusUpdate(challenge._id, 'cancel');
+    } catch (_) {}
+    setLoadingAction(false);
+  };
+
   const handlePay = async () => {
     setLoadingAction(true);
     try {
@@ -58,6 +66,16 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
       alert(err.response?.data?.message || 'Payment initiation failed.');
     }
     setLoadingAction(false);
+  };
+
+  const expirationTime = new Date(new Date(challenge.createdAt).getTime() + 72 * 60 * 60 * 1000);
+  const getRemainingTime = () => {
+    const diff = expirationTime.getTime() - Date.now();
+    if (diff <= 0) return 'Expired';
+    const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+    return `${days}d ${remHours}h`;
   };
 
   return (
@@ -90,9 +108,14 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
             </span>
           </div>
 
-          <p className="text-secondary/50 text-[10px] mt-2">
-            Created: {formatDate(challenge.createdAt)}
-          </p>
+          <div className="mt-2 flex flex-col space-y-1 text-secondary/50 text-[10px]">
+            <p>Created: {formatDate(challenge.createdAt)}</p>
+            {challenge.status === 'PENDING' && (
+              <p className="text-frost-50 font-bold uppercase tracking-wider">
+                Expires: {formatDate(expirationTime)} ({getRemainingTime()})
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -124,23 +147,47 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
         )}
 
         {isChallenger && challenge.status === 'PENDING' && (
-          <div className="flex items-center space-x-1 text-secondary/60 text-xs font-semibold uppercase tracking-wider py-1.5">
-            <Clock className="w-3.5 h-3.5" />
-            <span>Waiting for accept</span>
+          <div className="flex items-center justify-between w-full">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleCancel}
+              isLoading={loadingAction}
+              className="flex items-center space-x-1"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              <span>CANCEL</span>
+            </Button>
+            <div className="flex items-center space-x-1 text-secondary/60 text-xs font-semibold uppercase tracking-wider py-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Pending Response</span>
+            </div>
           </div>
         )}
 
         {isChallenger && challenge.status === 'PAYMENT_PENDING' && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handlePay}
-            isLoading={loadingAction}
-            className="flex items-center space-x-1.5 w-full justify-center"
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>PAY {formatAmount(challenge.challengeAmount)} NOW</span>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleCancel}
+              isLoading={loadingAction}
+              className="flex items-center justify-center space-x-1 flex-1"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              <span>CANCEL</span>
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handlePay}
+              isLoading={loadingAction}
+              className="flex items-center space-x-1.5 justify-center flex-2"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>PAY {formatAmount(challenge.challengeAmount)}</span>
+            </Button>
+          </div>
         )}
       </div>
     </Card>

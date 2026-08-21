@@ -54,10 +54,52 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`FROST Server running on 0.0.0.0:${PORT}`);
 });
 
+// Auto-expiration job for challenges (72 hours deadline)
+const expireChallengesJob = async () => {
+  try {
+    const Challenge = require('./models/Challenge');
+    const Notification = require('./models/Notification');
+    const seventyTwoHoursAgo = new Date(Date.now() - 72 * 60 * 60 * 1000);
+
+    const expiredChallenges = await Challenge.find({
+      status: 'PENDING',
+      createdAt: { $lt: seventyTwoHoursAgo }
+    }).populate('challengerId defenderId');
+
+    for (const challenge of expiredChallenges) {
+      challenge.status = 'EXPIRED';
+      await challenge.save();
+
+      if (challenge.challengerId && challenge.challengerId.userId) {
+        await Notification.create({
+          userId: challenge.challengerId.userId,
+          type: 'CHALLENGE_EXPIRED',
+          message: `Your challenge to ${challenge.defenderId?.ign || 'defender'} has expired without response.`,
+          relatedEntity: 'Challenge',
+          relatedId: challenge._id
+        });
+      }
+      if (challenge.defenderId && challenge.defenderId.userId) {
+        await Notification.create({
+          userId: challenge.defenderId.userId,
+          type: 'CHALLENGE_EXPIRED',
+          message: `The challenge from ${challenge.challengerId?.ign || 'challenger'} has expired. This counts as a decline.`,
+          relatedEntity: 'Challenge',
+          relatedId: challenge._id
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Error running expireChallengesJob:', err.message);
+  }
+};
+
 // Connect DB asynchronously
 connectDB().then(async () => {
   console.log('Database connected successfully.');
   await initializeAdmin();
+  expireChallengesJob();
+  setInterval(expireChallengesJob, 5 * 60 * 1000);
 }).catch(err => {
   console.error('Failed to connect to DB on startup:', err.message);
 });

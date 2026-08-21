@@ -75,7 +75,22 @@ const getPlayerById = async (req, res, next) => {
     const rankHistory = await RankingHistory.find({ playerId: profile._id })
       .sort({ createdAt: -1 }).limit(20);
 
-    res.json({ success: true, data: { profile, currentRank, stats, rankHistory } });
+    let rollingChallengesCount = 0;
+    if (req.user) {
+      const Challenge = require('../models/Challenge');
+      const challengerProfile = await PlayerProfile.findOne({ userId: req.user._id });
+      if (challengerProfile) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        rollingChallengesCount = await Challenge.countDocuments({
+          challengerId: challengerProfile._id,
+          defenderId: profile._id,
+          createdAt: { $gte: sevenDaysAgo },
+          status: { $ne: 'CANCELLED' }
+        });
+      }
+    }
+
+    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount } });
   } catch (err) {
     next(err);
   }

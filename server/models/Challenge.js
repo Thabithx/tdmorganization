@@ -15,7 +15,7 @@ const challengeSchema = new mongoose.Schema({
       'PENDING', 'ACCEPTED', 'REJECTED',
       'PAYMENT_PENDING', 'PAYMENT_CONFIRMED',
       'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING',
-      'COMPLETED', 'DISPUTED', 'CANCELLED'
+      'COMPLETED', 'DISPUTED', 'CANCELLED', 'EXPIRED'
     ],
     default: 'PENDING'
   },

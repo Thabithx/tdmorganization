@@ -90,17 +90,43 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 
-        {/* ===================================================
-             TEMPORARY SIGNUP-ONLY MODE
-             All non-admin routes serve TempSignup.
-             When ready to open the full platform, restore
-             the routes below.
-        =================================================== */}
-        <Route path="/" element={<TempSignup />} />
-        <Route path="/register" element={<TempSignup />} />
+        {/* Public/Main routes */}
+        <Route path="/" element={<MainLayoutWrapper><Home /></MainLayoutWrapper>} />
+        <Route path="/rankings" element={<MainLayoutWrapper><Rankings /></MainLayoutWrapper>} />
+        <Route path="/players" element={<MainLayoutWrapper><Players /></MainLayoutWrapper>} />
+        <Route path="/players/:id" element={<MainLayoutWrapper><PlayerProfile /></MainLayoutWrapper>} />
         <Route path="/login" element={<MainLayoutWrapper><Login /></MainLayoutWrapper>} />
+        <Route path="/register" element={<MainLayoutWrapper><Register /></MainLayoutWrapper>} />
+        <Route path="/challenge-rules" element={<MainLayoutWrapper><ChallengeRules /></MainLayoutWrapper>} />
 
-        {/* 404 Fallback → signup page */}
+        {/* Protected routes */}
+        <Route path="/challenge/:playerId" element={
+          <ProtectedRoute>
+            <MainLayoutWrapper><ChallengePage /></MainLayoutWrapper>
+          </ProtectedRoute>
+        } />
+        <Route path="/challenges" element={
+          <ProtectedRoute>
+            <MainLayoutWrapper><Challenges /></MainLayoutWrapper>
+          </ProtectedRoute>
+        } />
+        <Route path="/history" element={
+          <ProtectedRoute>
+            <MainLayoutWrapper><MatchHistory /></MainLayoutWrapper>
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <MainLayoutWrapper><MyProfile /></MainLayoutWrapper>
+          </ProtectedRoute>
+        } />
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <MainLayoutWrapper><Notifications /></MainLayoutWrapper>
+          </ProtectedRoute>
+        } />
+
+        {/* 404 Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

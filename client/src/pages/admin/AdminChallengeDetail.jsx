@@ -140,7 +140,7 @@ export default function AdminChallengeDetail() {
             {TIMELINE_STEPS.map((step, idx) => {
               const isDone = idx < currentStep || challenge.status === step;
               const isCurrent = challenge.status === step;
-              const isCancelled = challenge.status === 'CANCELLED' || challenge.status === 'REJECTED';
+              const isCancelled = challenge.status === 'CANCELLED' || challenge.status === 'REJECTED' || challenge.status === 'EXPIRED';
               return (
                 <React.Fragment key={step}>
                   <div className={`flex-shrink-0 flex flex-col items-center gap-1`}>
@@ -194,6 +194,10 @@ export default function AdminChallengeDetail() {
             <INFO_ROW label="Platform" value={<PlatformBadge platform={challenge.challengerId?.platform} />} />
             <INFO_ROW label="Rank at Creation" value={challenge.challengerRankAtCreation ? `#${challenge.challengerRankAtCreation}` : 'Unranked'} />
             <INFO_ROW label="Created" value={formatDate(challenge.createdAt)} />
+            <INFO_ROW label="Expires" value={formatDate(new Date(new Date(challenge.createdAt).getTime() + 72 * 60 * 60 * 1000))} />
+            {challenge.status === 'EXPIRED' && (
+              <INFO_ROW label="Expired At" value={formatDate(challenge.updatedAt)} />
+            )}
           </div>
         </Card>
 

@@ -38,7 +38,26 @@ const getChallenges = async (req, res, next) => {
       .populate('defenderId', 'ign pubgUid platform avatar')
       .sort({ createdAt: -1 });
 
-    res.json({ success: true, data: challenges });
+    let declineCount = 0;
+    let isRankedTop10 = false;
+    if (profile) {
+      const Ranking = require('../models/Ranking');
+      const defenderRankDoc = await Ranking.findOne({ platform: profile.platform, players: profile._id });
+      if (defenderRankDoc && defenderRankDoc.rank <= 10) {
+        isRankedTop10 = true;
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        declineCount = await Challenge.countDocuments({
+          defenderId: profile._id,
+          status: { $in: ['REJECTED', 'EXPIRED'] },
+          $or: [
+            { rejectedAt: { $gte: sevenDaysAgo } },
+            { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+          ]
+        });
+      }
+    }
+
+    res.json({ success: true, data: challenges, meta: { declineCount, isRankedTop10 } });
   } catch (err) {
     next(err);
   }
@@ -80,4 +99,16 @@ const rejectChallenge = async (req, res, next) => {
   }
 };
 
-module.exports = { createChallenge, getChallenges, getChallengeById, acceptChallenge, rejectChallenge };
+const cancelChallenge = async (req, res, next) => {
+  try {
+    const challenge = await challengeService.cancelChallenge({
+      challengeId: req.params.id,
+      challengerUserId: req.user._id,
+    });
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { createChallenge, getChallenges, getChallengeById, acceptChallenge, rejectChallenge, cancelChallenge };

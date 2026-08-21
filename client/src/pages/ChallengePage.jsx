@@ -19,6 +19,7 @@ const ChallengePage = () => {
 
   const [opponent, setOpponent] = useState(null);
   const [opponentRank, setOpponentRank] = useState(null);
+  const [rollingChallengesCount, setRollingChallengesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [amount, setAmount] = useState('');
@@ -33,6 +34,7 @@ const ChallengePage = () => {
         if (res.success) {
           setOpponent(res.data.profile);
           setOpponentRank(res.data.currentRank);
+          setRollingChallengesCount(res.data.rollingChallengesCount || 0);
           const min = getMinimumChallengeAmount(res.data.currentRank);
           setAmount(String(min));
         } else {
@@ -106,6 +108,19 @@ const ChallengePage = () => {
         <p className="text-secondary text-sm mb-6">
           You play on <strong className="text-frost-100">{myProfile?.platform}</strong> but {opponent?.ign} plays on{' '}
           <strong className="text-frost-100">{opponent?.platform}</strong>. Cross-platform challenges are not allowed.
+        </p>
+        <Button variant="secondary" size="md" onClick={() => navigate(-1)}>GO BACK</Button>
+      </Card>
+    </div>
+  );
+
+  if (rollingChallengesCount >= 2) return (
+    <div className="max-w-lg mx-auto py-16">
+      <Card variant="default" className="p-8 text-center border-red-500/20">
+        <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" />
+        <h2 className="font-heading text-lg font-bold text-red-200 uppercase mb-2">CHALLENGE LIMIT REACHED</h2>
+        <p className="text-secondary text-sm mb-6">
+          You have already challenged this player twice in the last 7 days.
         </p>
         <Button variant="secondary" size="md" onClick={() => navigate(-1)}>GO BACK</Button>
       </Card>

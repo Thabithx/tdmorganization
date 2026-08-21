@@ -593,6 +593,16 @@ const getAdminPlayerById = async (req, res, next) => {
       .populate('adminId', 'username')
       .sort({ createdAt: -1 });
 
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const declinesLast7Days = await Challenge.countDocuments({
+      defenderId: profile._id,
+      status: { $in: ['REJECTED', 'EXPIRED'] },
+      $or: [
+        { rejectedAt: { $gte: sevenDaysAgo } },
+        { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+      ]
+    });
+
     res.json({
       success: true,
       data: {
@@ -603,7 +613,8 @@ const getAdminPlayerById = async (req, res, next) => {
         challengesReceived,
         matches,
         payments,
-        rankHistory
+        rankHistory,
+        declinesLast7Days
       }
     });
   } catch (err) {
