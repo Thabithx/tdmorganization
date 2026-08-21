@@ -34,8 +34,8 @@ const getChallenges = async (req, res, next) => {
     if (status) query.status = status;
 
     const challenges = await Challenge.find(query)
-      .populate('challengerId', 'ign pubgUid platform avatar')
-      .populate('defenderId', 'ign pubgUid platform avatar')
+      .populate('challengerId', 'ign pubgUid platform avatar avatarPosition')
+      .populate('defenderId', 'ign pubgUid platform avatar avatarPosition')
       .sort({ createdAt: -1 });
 
     // Lazy expiration check for all returned challenges
@@ -72,8 +72,8 @@ const getChallenges = async (req, res, next) => {
 const getChallengeById = async (req, res, next) => {
   try {
     let challenge = await Challenge.findById(req.params.id)
-      .populate('challengerId', 'ign pubgUid platform avatar')
-      .populate('defenderId', 'ign pubgUid platform avatar');
+      .populate('challengerId', 'ign pubgUid platform avatar avatarPosition')
+      .populate('defenderId', 'ign pubgUid platform avatar avatarPosition');
     if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found.' });
     challenge = await challengeService.checkAndLazyExpire(challenge);
     res.json({ success: true, data: challenge });
