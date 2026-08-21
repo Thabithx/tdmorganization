@@ -102,7 +102,7 @@ const updateProfile = async (req, res, next) => {
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found.' });
 
     // Allow updating safe fields including pubgUid and avatarPosition
-    const allowed = ['avatar', 'bio', 'pubgUid', 'avatarPosition'];
+    const allowed = ['avatar', 'bio', 'pubgUid', 'avatarPosition', 'whatsapp'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined && req.body[key] !== '') updates[key] = req.body[key];

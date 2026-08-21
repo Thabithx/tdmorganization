@@ -15,6 +15,7 @@ const MyProfile = () => {
     bio: profile?.bio || '',
     pubgUid: profile?.pubgUid || '',
     avatar: profile?.avatar || '',
+    whatsapp: profile?.whatsapp || '',
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -42,6 +43,7 @@ const MyProfile = () => {
       const fd = new FormData();
       fd.append('bio', formData.bio);
       fd.append('pubgUid', formData.pubgUid);
+      fd.append('whatsapp', formData.whatsapp);
       fd.append('avatarPosition', avatarPosition);
       if (formData.avatar && !avatarFile) fd.append('avatar', formData.avatar);
       if (avatarFile) fd.append('avatarFile', avatarFile);
@@ -64,7 +66,12 @@ const MyProfile = () => {
   };
 
   const handleCancel = () => {
-    setFormData({ bio: profile?.bio || '', pubgUid: profile?.pubgUid || '', avatar: profile?.avatar || '' });
+    setFormData({
+      bio: profile?.bio || '',
+      pubgUid: profile?.pubgUid || '',
+      avatar: profile?.avatar || '',
+      whatsapp: profile?.whatsapp || '',
+    });
     setAvatarFile(null);
     setAvatarPreview(null);
     setEditing(false);
@@ -139,10 +146,16 @@ const MyProfile = () => {
               <PlatformBadge platform={profile?.platform} />
             </div>
             {!editing && (
-              <div className="flex justify-between py-2 border-b border-frost-50/5">
-                <span className="text-secondary text-sm">PUBG UID</span>
-                <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.pubgUid}</span>
-              </div>
+              <>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">PUBG UID</span>
+                  <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.pubgUid}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">WhatsApp</span>
+                  <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.whatsapp || '—'}</span>
+                </div>
+              </>
             )}
           </div>
 
@@ -171,21 +184,19 @@ const MyProfile = () => {
                 />
               </div>
 
-              {/* Avatar URL (fallback if no file) */}
-              {!avatarFile && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
-                    Avatar URL <span className="text-secondary/50 normal-case font-normal">(or upload a photo above)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.avatar}
-                    onChange={e => setFormData(p => ({ ...p, avatar: e.target.value }))}
-                    placeholder="https://..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
-                  />
-                </div>
-              )}
+              {/* WhatsApp Number */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
+                  WhatsApp Number <span className="text-[#8BE3FF] normal-case font-normal">(required)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={formData.whatsapp}
+                  onChange={e => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
+                  placeholder="e.g. +94771234567"
+                  className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
+                />
+              </div>
 
               {/* Bio */}
               <div className="space-y-1.5">
