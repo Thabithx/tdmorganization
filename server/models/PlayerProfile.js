@@ -10,6 +10,10 @@ const playerProfileSchema = new mongoose.Schema({
   avatarPosition: { type: String, default: 'center top' },
   bio: { type: String, default: '', maxlength: 300 },
   status: { type: String, enum: ['ACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
+  tiktok: { type: String, default: '' },
+  instagram: { type: String, default: '' },
+  yearsPlaying: { type: Number, default: 0 },
+  lookingFor: { type: String, default: '' },
   adminNotes: [{
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },

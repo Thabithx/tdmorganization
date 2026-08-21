@@ -107,6 +107,38 @@ const PlayerProfile = () => {
               </p>
             )}
 
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary/60">
+              {profile.yearsPlaying > 0 && (
+                <span>🎮 <strong className="text-frost-50">{profile.yearsPlaying}</strong> years playing</span>
+              )}
+              {profile.lookingFor && (
+                <span>🎯 Looking for: <strong className="text-frost-50">{profile.lookingFor}</strong></span>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-4 text-xs pt-1">
+              {profile.instagram && (
+                <a
+                  href={`https://instagram.com/${profile.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-frost-50 hover:text-white transition-colors"
+                >
+                  📸 Instagram: <span className="underline">@{profile.instagram}</span>
+                </a>
+              )}
+              {profile.tiktok && (
+                <a
+                  href={`https://tiktok.com/@${profile.tiktok}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-frost-50 hover:text-white transition-colors"
+                >
+                  🎵 TikTok: <span className="underline">@{profile.tiktok}</span>
+                </a>
+              )}
+            </div>
+
             {/* Actions */}
             <div className="flex items-center space-x-3 pt-2">
               {canChallenge && samePlatform && (

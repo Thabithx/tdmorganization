@@ -16,6 +16,10 @@ const MyProfile = () => {
     pubgUid: profile?.pubgUid || '',
     avatar: profile?.avatar || '',
     whatsapp: profile?.whatsapp || '',
+    tiktok: profile?.tiktok || '',
+    instagram: profile?.instagram || '',
+    yearsPlaying: profile?.yearsPlaying || 0,
+    lookingFor: profile?.lookingFor || '',
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -44,6 +48,10 @@ const MyProfile = () => {
       fd.append('bio', formData.bio);
       fd.append('pubgUid', formData.pubgUid);
       fd.append('whatsapp', formData.whatsapp);
+      fd.append('tiktok', formData.tiktok);
+      fd.append('instagram', formData.instagram);
+      fd.append('yearsPlaying', formData.yearsPlaying);
+      fd.append('lookingFor', formData.lookingFor);
       fd.append('avatarPosition', avatarPosition);
       if (formData.avatar && !avatarFile) fd.append('avatar', formData.avatar);
       if (avatarFile) fd.append('avatarFile', avatarFile);
@@ -71,6 +79,10 @@ const MyProfile = () => {
       pubgUid: profile?.pubgUid || '',
       avatar: profile?.avatar || '',
       whatsapp: profile?.whatsapp || '',
+      tiktok: profile?.tiktok || '',
+      instagram: profile?.instagram || '',
+      yearsPlaying: profile?.yearsPlaying || 0,
+      lookingFor: profile?.lookingFor || '',
     });
     setAvatarFile(null);
     setAvatarPreview(null);
@@ -155,6 +167,22 @@ const MyProfile = () => {
                   <span className="text-secondary text-sm">WhatsApp</span>
                   <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.whatsapp || '—'}</span>
                 </div>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">Years Playing PUBG</span>
+                  <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.yearsPlaying || 0} years</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">Mood / Looking For</span>
+                  <span className="font-heading font-semibold text-frost-50 text-sm uppercase tracking-wider">{profile?.lookingFor || 'Not Specified'}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">Instagram</span>
+                  <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.instagram ? `@${profile.instagram}` : '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-frost-50/5">
+                  <span className="text-secondary text-sm">TikTok</span>
+                  <span className="font-heading font-semibold text-[#F4FBFF] text-sm">{profile?.tiktok ? `@${profile.tiktok}` : '—'}</span>
+                </div>
               </>
             )}
           </div>
@@ -196,6 +224,62 @@ const MyProfile = () => {
                   placeholder="e.g. +94771234567"
                   className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
                 />
+              </div>
+
+              {/* Years Playing & Looking For */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
+                    Years Playing PUBG
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.yearsPlaying}
+                    onChange={e => setFormData(p => ({ ...p, yearsPlaying: parseInt(e.target.value) || 0 }))}
+                    placeholder="e.g. 3"
+                    className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all font-mono"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
+                    Looking For / Mood
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.lookingFor}
+                    onChange={e => setFormData(p => ({ ...p, lookingFor: e.target.value }))}
+                    placeholder="e.g. TDM Partners, Competitions"
+                    className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Social Media Links */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
+                    Instagram Username
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.instagram}
+                    onChange={e => setFormData(p => ({ ...p, instagram: e.target.value }))}
+                    placeholder="e.g. frost_player"
+                    className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">
+                    TikTok Username
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tiktok}
+                    onChange={e => setFormData(p => ({ ...p, tiktok: e.target.value }))}
+                    placeholder="e.g. frost_player"
+                    className="w-full px-4 py-2.5 rounded-xl bg-frost-800/60 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 transition-all"
+                  />
+                </div>
               </div>
 
               {/* Bio */}
