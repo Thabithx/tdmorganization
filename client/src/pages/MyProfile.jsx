@@ -114,17 +114,11 @@ const MyProfile = () => {
           {/* Avatar */}
           <div className="flex items-center space-x-5">
             <div className="relative flex-shrink-0">
-              {currentAvatar ? (
-                <img
-                  src={currentAvatar}
-                  alt={profile?.ign}
-                  className="w-20 h-20 rounded-2xl object-contain bg-[#0B101A] border-2 border-frost-50/20"
-                  style={{ objectPosition: avatarPosition }}
-                  onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
-                />
-              ) : (
-                <PlayerAvatar profile={profile} size="xl" objectPosition={avatarPosition} />
-              )}
+              <PlayerAvatar
+                profile={{ ...profile, avatar: currentAvatar || profile?.avatar, avatarPosition }}
+                size="lg"
+                objectPosition={avatarPosition}
+              />
               {editing && (
                 <button
                   onClick={() => fileInputRef.current?.click()}

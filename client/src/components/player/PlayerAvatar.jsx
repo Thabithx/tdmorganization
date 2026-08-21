@@ -1,10 +1,10 @@
 import React from 'react';
 
-const DEFAULT_AVATAR = '/default_avatar.png';
+const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png';
 
 const PlayerAvatar = ({ profile, size = 'md', className = '', objectPosition = 'center top' }) => {
   const ign = profile?.ign || 'P';
-  const avatar = profile?.avatar || DEFAULT_AVATAR;
+  const avatar = (profile?.avatar && profile.avatar !== '/default_avatar.png' && profile.avatar !== '') ? profile.avatar : DEFAULT_AVATAR;
 
   const sizes = {
     sm: 'w-10 h-10',

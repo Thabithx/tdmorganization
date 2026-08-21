@@ -10,8 +10,8 @@ const getMatches = async (req, res, next) => {
     if (status) query.resultStatus = status;
 
     const matches = await Match.find(query)
-      .populate('challengerId', 'ign pubgUid platform avatar avatarPosition')
-      .populate('defenderId', 'ign pubgUid platform avatar avatarPosition')
+      .populate('challengerId', 'ign pubgUid platform avatar')
+      .populate('defenderId', 'ign pubgUid platform avatar')
       .populate('winnerId', 'ign')
       .populate('loserId', 'ign')
       .sort({ createdAt: -1 });
@@ -25,8 +25,8 @@ const getMatches = async (req, res, next) => {
 const getMatchById = async (req, res, next) => {
   try {
     const match = await Match.findById(req.params.id)
-      .populate('challengerId', 'ign pubgUid platform avatar avatarPosition')
-      .populate('defenderId', 'ign pubgUid platform avatar avatarPosition')
+      .populate('challengerId', 'ign pubgUid platform avatar')
+      .populate('defenderId', 'ign pubgUid platform avatar')
       .populate('winnerId', 'ign')
       .populate('loserId', 'ign')
       .populate('verifiedBy', 'username');
