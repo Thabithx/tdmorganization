@@ -204,6 +204,53 @@ const PlayerProfile = () => {
         >
           {activeTab === 'OVERVIEW' && (
             <div className="space-y-8">
+              {/* Profile Details */}
+              <div className="space-y-3">
+                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">📋 Profile Details</h3>
+                <Card variant="default" className="p-5 border-frost-50/5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Gaming Platform</span>
+                    <PlatformBadge platform={profile.platform} />
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">PUBG UID</span>
+                    <span className="font-mono text-[#F4FBFF] text-xs">{profile.pubgUid}</span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Years Playing</span>
+                    <span className="font-heading font-bold text-[#F4FBFF] text-xs">{profile.yearsPlaying || 0} years</span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Looking For</span>
+                    <span className="font-heading font-bold text-frost-50 text-xs uppercase tracking-wider">{profile.lookingFor || 'Not Specified'}</span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Instagram</span>
+                    <span className="font-heading font-bold text-[#F4FBFF] text-xs">
+                      {profile.instagram ? (
+                        <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                          @{profile.instagram}
+                        </a>
+                      ) : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">TikTok</span>
+                    <span className="font-heading font-bold text-[#F4FBFF] text-xs">
+                      {profile.tiktok ? (
+                        <a href={`https://tiktok.com/@${profile.tiktok}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                          @{profile.tiktok}
+                        </a>
+                      ) : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5 sm:col-span-2">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Member Since</span>
+                    <span className="font-heading font-bold text-[#F4FBFF] text-xs">{formatDate(profile.createdAt)}</span>
+                  </div>
+                </Card>
+              </div>
+
               {/* Notable Victories */}
               <div className="space-y-3">
                 <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">⚡ Notable Victories</h3>
