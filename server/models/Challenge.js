@@ -21,7 +21,13 @@ const challengeSchema = new mongoose.Schema({
   },
   acceptedAt: { type: Date },
   rejectedAt: { type: Date },
+  expiredAt: { type: Date },
   paymentDeadline: { type: Date },
+  cancellationReason: {
+    type: String,
+    enum: ['', 'PLAYER_CANCELLED', 'SYSTEM_CANCELLED', 'DEFENDER_CONFLICT_CANCELLED', 'PAYMENT_TIMEOUT', 'AUTO_EXPIRED'],
+    default: ''
+  },
   notes: { type: String, default: '' },
 }, { timestamps: true });
 

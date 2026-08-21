@@ -185,24 +185,50 @@ const getAdminPlayers = async (req, res, next) => {
 
 const updateAdminPlayer = async (req, res, next) => {
   try {
+    const existing = await PlayerProfile.findById(req.params.id);
+    if (!existing) return res.status(404).json({ success: false, message: 'Player not found.' });
+
     const allowed = ['ign', 'pubgUid', 'platform', 'avatar', 'bio', 'status'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
 
-    const profile = await PlayerProfile.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
+    // Require reason for platform change
+    const oldPlatform = existing.platform;
+    const newPlatform = updates.platform;
+    const reason = req.body.reason || 'Admin modification';
+
+    if (newPlatform && newPlatform !== oldPlatform) {
+      // Remove player from old platform ranks if present
+      const oldRankDoc = await Ranking.findOne({ platform: oldPlatform, players: existing._id });
+      if (oldRankDoc) {
+        oldRankDoc.players = oldRankDoc.players.filter(p => p.toString() !== existing._id.toString());
+        if (oldRankDoc.players.length === 0) {
+          await Ranking.deleteOne({ _id: oldRankDoc._id });
+        } else {
+          await oldRankDoc.save();
+        }
+      }
+    }
+
+    Object.assign(existing, updates);
+    await existing.save();
 
     await AdminAuditLog.create({
       adminId: req.user._id,
-      action: 'PLAYER_UPDATED',
+      action: newPlatform && newPlatform !== oldPlatform ? 'PLAYER_PLATFORM_CHANGED' : 'PLAYER_UPDATED',
       targetEntity: 'PlayerProfile',
-      targetId: profile._id,
-      metadata: updates,
+      targetId: existing._id,
+      reason,
+      metadata: {
+        updates,
+        oldPlatform,
+        newPlatform: updates.platform || oldPlatform,
+      },
     });
 
-    res.json({ success: true, data: profile });
+    res.json({ success: true, data: existing });
   } catch (err) {
     next(err);
   }

@@ -38,6 +38,11 @@ const getChallenges = async (req, res, next) => {
       .populate('defenderId', 'ign pubgUid platform avatar')
       .sort({ createdAt: -1 });
 
+    // Lazy expiration check for all returned challenges
+    for (let i = 0; i < challenges.length; i++) {
+      challenges[i] = await challengeService.checkAndLazyExpire(challenges[i]);
+    }
+
     let declineCount = 0;
     let isRankedTop10 = false;
     if (profile) {
@@ -51,6 +56,7 @@ const getChallenges = async (req, res, next) => {
           status: { $in: ['REJECTED', 'EXPIRED'] },
           $or: [
             { rejectedAt: { $gte: sevenDaysAgo } },
+            { expiredAt: { $gte: sevenDaysAgo } },
             { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
           ]
         });
@@ -65,10 +71,11 @@ const getChallenges = async (req, res, next) => {
 
 const getChallengeById = async (req, res, next) => {
   try {
-    const challenge = await Challenge.findById(req.params.id)
+    let challenge = await Challenge.findById(req.params.id)
       .populate('challengerId', 'ign pubgUid platform avatar')
       .populate('defenderId', 'ign pubgUid platform avatar');
     if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found.' });
+    challenge = await challengeService.checkAndLazyExpire(challenge);
     res.json({ success: true, data: challenge });
   } catch (err) {
     next(err);
