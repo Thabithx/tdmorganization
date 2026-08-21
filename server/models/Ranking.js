@@ -21,7 +21,7 @@ rankingSchema.pre('save', function (next) {
 rankingSchema.statics.getLeaderboard = async function (platform) {
   return this.find({ platform }).sort({ rank: 1 }).populate({
     path: 'players',
-    select: 'ign pubgUid platform avatar avatarPosition bio status',
+    select: 'ign pubgUid platform avatar bio status',
   });
 };
 

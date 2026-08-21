@@ -59,6 +59,16 @@ const MyProfile = () => {
       const res = await playerService.updateProfile(fd);
       if (res.success) {
         updateLocalProfile(res.data);
+        setFormData({
+          bio: res.data.bio || '',
+          pubgUid: res.data.pubgUid || '',
+          avatar: res.data.avatar || '',
+          whatsapp: res.data.whatsapp || '',
+          tiktok: res.data.tiktok || '',
+          instagram: res.data.instagram || '',
+          yearsPlaying: res.data.yearsPlaying || 0,
+          lookingFor: res.data.lookingFor || '',
+        });
         setSuccess('Profile updated successfully!');
         setEditing(false);
         setAvatarFile(null);
@@ -114,11 +124,17 @@ const MyProfile = () => {
           {/* Avatar */}
           <div className="flex items-center space-x-5">
             <div className="relative flex-shrink-0">
-              <PlayerAvatar
-                profile={{ ...profile, avatar: currentAvatar || profile?.avatar, avatarPosition }}
-                size="lg"
-                objectPosition={avatarPosition}
-              />
+              {currentAvatar ? (
+                <img
+                  src={currentAvatar}
+                  alt={profile?.ign}
+                  className="w-20 h-20 rounded-2xl object-contain bg-[#0B101A] border-2 border-frost-50/20"
+                  style={{ objectPosition: avatarPosition }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = ''; }}
+                />
+              ) : (
+                <PlayerAvatar profile={profile} size="xl" objectPosition={avatarPosition} />
+              )}
               {editing && (
                 <button
                   onClick={() => fileInputRef.current?.click()}

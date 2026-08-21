@@ -5,7 +5,6 @@ import Button from '../ui/Button';
 import { StatusBadge, PlatformBadge } from '../ui/Badge';
 import { formatAmount, formatDate, getNetPrize } from '../../utils/formatters';
 import useAuth from '../../hooks/useAuth';
-import PlayerAvatar from '../player/PlayerAvatar';
 import * as paymentService from '../../services/payment.service';
 
 const ChallengeCard = ({ challenge, onStatusUpdate }) => {
@@ -94,32 +93,29 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
         </div>
 
         {/* Competitors and Details */}
-        <div className="mt-4 flex items-center space-x-3">
-          <PlayerAvatar profile={opponent} size="sm" />
-          <div>
-            <h4 className="font-heading text-base font-bold text-frost-100 uppercase tracking-wide">
-              vs {opponent?.ign}
-            </h4>
-            <p className="text-secondary text-xs uppercase font-semibold tracking-wider mt-0.5">
-              UID: {opponent?.pubgUid}
-            </p>
+        <div className="mt-4">
+          <h4 className="font-heading text-base font-bold text-frost-100 uppercase tracking-wide">
+            vs {opponent?.ign}
+          </h4>
+          <p className="text-secondary text-xs uppercase font-semibold tracking-wider mt-0.5">
+            UID: {opponent?.pubgUid}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-frost-50/5">
+            <PlatformBadge platform={challenge.platform} />
+            <span className="font-heading text-base font-bold text-emerald-400">
+              {isChallenger ? 'Challenge Amount:' : 'Prize:'} {formatAmount(displayAmount)}
+            </span>
           </div>
-        </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-frost-50/5">
-          <PlatformBadge platform={challenge.platform} />
-          <span className="font-heading text-base font-bold text-emerald-400">
-            {isChallenger ? 'Challenge Amount:' : 'Prize:'} {formatAmount(displayAmount)}
-          </span>
-        </div>
-
-        <div className="mt-2 flex flex-col space-y-1 text-secondary/50 text-[10px]">
-          <p>Created: {formatDate(challenge.createdAt)}</p>
-          {challenge.status === 'PENDING' && (
-            <p className="text-frost-50 font-bold uppercase tracking-wider">
-              Expires: {formatDate(expirationTime)} ({getRemainingTime()})
-            </p>
-          )}
+          <div className="mt-2 flex flex-col space-y-1 text-secondary/50 text-[10px]">
+            <p>Created: {formatDate(challenge.createdAt)}</p>
+            {challenge.status === 'PENDING' && (
+              <p className="text-frost-50 font-bold uppercase tracking-wider">
+                Expires: {formatDate(expirationTime)} ({getRemainingTime()})
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
