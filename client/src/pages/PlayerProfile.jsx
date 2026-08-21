@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Swords, Trophy, Target, Flame, ChevronRight, Shield } from 'lucide-react';
+import { Swords, Trophy, Target, Flame, ChevronRight, Shield, Gamepad2, Camera, Tv, FileText, Zap, Crosshair } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayerAvatar from '../components/player/PlayerAvatar';
 import MatchCard from '../components/match/MatchCard';
@@ -109,10 +109,10 @@ const PlayerProfile = () => {
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary/60">
               {profile.yearsPlaying > 0 && (
-                <span>🎮 <strong className="text-frost-50">{profile.yearsPlaying}</strong> years playing</span>
+                <span className="flex items-center space-x-1"><Gamepad2 className="w-3.5 h-3.5 text-frost-50" /> <span><strong className="text-frost-50">{profile.yearsPlaying}</strong> years playing</span></span>
               )}
               {profile.lookingFor && (
-                <span>🎯 Looking for: <strong className="text-frost-50">{profile.lookingFor}</strong></span>
+                <span className="flex items-center space-x-1"><Target className="w-3.5 h-3.5 text-frost-50" /> <span>Looking for: <strong className="text-frost-50">{profile.lookingFor}</strong></span></span>
               )}
             </div>
 
@@ -122,9 +122,10 @@ const PlayerProfile = () => {
                   href={`https://instagram.com/${profile.instagram}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-frost-50 hover:text-white transition-colors"
+                  className="flex items-center space-x-1.5 text-frost-50 hover:text-white transition-colors"
                 >
-                  📸 Instagram: <span className="underline">@{profile.instagram}</span>
+                  <Camera className="w-3.5 h-3.5 text-frost-50" />
+                  <span>Instagram: <span className="underline">@{profile.instagram}</span></span>
                 </a>
               )}
               {profile.tiktok && (
@@ -132,9 +133,10 @@ const PlayerProfile = () => {
                   href={`https://tiktok.com/@${profile.tiktok}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-frost-50 hover:text-white transition-colors"
+                  className="flex items-center space-x-1.5 text-frost-50 hover:text-white transition-colors"
                 >
-                  🎵 TikTok: <span className="underline">@{profile.tiktok}</span>
+                  <Tv className="w-3.5 h-3.5 text-frost-50" />
+                  <span>TikTok: <span className="underline">@{profile.tiktok}</span></span>
                 </a>
               )}
             </div>
@@ -206,7 +208,10 @@ const PlayerProfile = () => {
             <div className="space-y-8">
               {/* Profile Details */}
               <div className="space-y-3">
-                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">📋 Profile Details</h3>
+                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-frost-50" />
+                  <span>Profile Details</span>
+                </h3>
                 <Card variant="default" className="p-5 border-frost-50/5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
                   <div className="flex justify-between py-2.5 border-b border-frost-50/5">
                     <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Gaming Platform</span>
@@ -253,7 +258,10 @@ const PlayerProfile = () => {
 
               {/* Notable Victories */}
               <div className="space-y-3">
-                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">⚡ Notable Victories</h3>
+                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">
+                  <Zap className="w-4 h-4 text-frost-50" />
+                  <span>Notable Victories</span>
+                </h3>
                 {stats?.notableVictories?.length > 0 ? (
                   <div className="space-y-2">
                     {stats.notableVictories.slice(0, 5).map((v, i) => (
@@ -280,7 +288,10 @@ const PlayerProfile = () => {
 
               {/* Players Defeated preview */}
               <div className="space-y-3">
-                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">🏹 Players Defeated</h3>
+                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">
+                  <Crosshair className="w-4 h-4 text-frost-50" />
+                  <span>Players Defeated</span>
+                </h3>
                 {stats?.playersDefeated?.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {stats.playersDefeated.slice(0, 6).map((p, i) => (
@@ -301,7 +312,10 @@ const PlayerProfile = () => {
 
               {/* Recent Matches */}
               <div className="space-y-3">
-                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest">🔥 Recent Matches</h3>
+                <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">
+                  <Flame className="w-4 h-4 text-frost-50" />
+                  <span>Recent Matches</span>
+                </h3>
                 {stats?.recentMatches?.length > 0 ? (
                   <div className="space-y-3">
                     {stats.recentMatches.slice(0, 5).map((m, i) => (
