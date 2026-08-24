@@ -14,6 +14,7 @@ const playerProfileSchema = new mongoose.Schema({
   instagram: { type: String, default: '' },
   yearsPlaying: { type: Number, default: 0 },
   lookingFor: { type: String, default: '' },
+  controlsLayout: { type: String, default: '' },
   adminNotes: [{
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
@@ -23,5 +24,6 @@ const playerProfileSchema = new mongoose.Schema({
 
 playerProfileSchema.index({ ign: 'text' });
 playerProfileSchema.index({ platform: 1 });
+playerProfileSchema.index({ status: 1, platform: 1 });
 
 module.exports = mongoose.model('PlayerProfile', playerProfileSchema);

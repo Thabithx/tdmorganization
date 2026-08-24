@@ -20,14 +20,18 @@ const MyProfile = () => {
     instagram: profile?.instagram || '',
     yearsPlaying: profile?.yearsPlaying || 0,
     lookingFor: profile?.lookingFor || '',
+    controlsLayout: profile?.controlsLayout || '',
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarPosition, setAvatarPosition] = useState(profile?.avatarPosition || 'center top');
+  const [controlsLayoutFile, setControlsLayoutFile] = useState(null);
+  const [controlsLayoutPreview, setControlsLayoutPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
+  const controlsLayoutInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -36,6 +40,15 @@ const MyProfile = () => {
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
     setAvatarPosition('center center'); // auto-center on new upload
+    setError('');
+  };
+
+  const handleControlsFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5MB.'); return; }
+    setControlsLayoutFile(file);
+    setControlsLayoutPreview(URL.createObjectURL(file));
     setError('');
   };
 
@@ -55,6 +68,8 @@ const MyProfile = () => {
       fd.append('avatarPosition', avatarPosition);
       if (formData.avatar && !avatarFile) fd.append('avatar', formData.avatar);
       if (avatarFile) fd.append('avatarFile', avatarFile);
+      if (formData.controlsLayout && !controlsLayoutFile) fd.append('controlsLayout', formData.controlsLayout);
+      if (controlsLayoutFile) fd.append('controlsLayoutFile', controlsLayoutFile);
 
       const res = await playerService.updateProfile(fd);
       if (res.success) {
@@ -68,11 +83,14 @@ const MyProfile = () => {
           instagram: res.data.instagram || '',
           yearsPlaying: res.data.yearsPlaying || 0,
           lookingFor: res.data.lookingFor || '',
+          controlsLayout: res.data.controlsLayout || '',
         });
         setSuccess('Profile updated successfully!');
         setEditing(false);
         setAvatarFile(null);
         setAvatarPreview(null);
+        setControlsLayoutFile(null);
+        setControlsLayoutPreview(null);
       } else {
         setError(res.message || 'Failed to update profile.');
       }
@@ -93,14 +111,18 @@ const MyProfile = () => {
       instagram: profile?.instagram || '',
       yearsPlaying: profile?.yearsPlaying || 0,
       lookingFor: profile?.lookingFor || '',
+      controlsLayout: profile?.controlsLayout || '',
     });
     setAvatarFile(null);
     setAvatarPreview(null);
+    setControlsLayoutFile(null);
+    setControlsLayoutPreview(null);
     setEditing(false);
     setError('');
   };
 
   const currentAvatar = avatarPreview || profile?.avatar;
+  const currentControlsLayout = controlsLayoutPreview || profile?.controlsLayout;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 py-4">
@@ -338,6 +360,32 @@ const MyProfile = () => {
                 </div>
               )}
 
+              {/* Controls Layout Upload */}
+              <div className="space-y-2 pt-2 border-t border-frost-50/5">
+                <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest block">
+                  Controls Layout Picture
+                </label>
+                {currentControlsLayout ? (
+                  <div className="relative rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10 max-h-48 max-w-md flex items-center justify-center">
+                    <img src={currentControlsLayout} alt="Controls Layout" className="w-full h-full object-contain max-h-48" />
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-frost-50/20 text-center text-xs text-secondary/60">
+                    No Controls Layout uploaded yet
+                  </div>
+                )}
+                <div className="flex items-center space-x-2 pt-1">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => controlsLayoutInputRef.current?.click()} className="flex items-center space-x-1">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{currentControlsLayout ? 'CHANGE PHOTO' : 'UPLOAD PHOTO'}</span>
+                  </Button>
+                  <input ref={controlsLayoutInputRef} type="file" accept="image/*" onChange={handleControlsFileChange} className="hidden" />
+                  {controlsLayoutFile && (
+                    <span className="text-[10px] text-emerald-400">Selected: {controlsLayoutFile.name}</span>
+                  )}
+                </div>
+              </div>
+
               {error && (
                 <div className="flex items-center space-x-2 p-3 rounded-lg bg-red-950/30 border border-red-500/20 text-red-300 text-xs">
                   <AlertTriangle className="w-4 h-4" />
@@ -357,11 +405,21 @@ const MyProfile = () => {
               </div>
             </div>
           ) : (
-            profile?.bio && (
-              <div className="pt-2 border-t border-frost-50/5">
-                <p className="text-secondary/80 text-sm italic">"{profile.bio}"</p>
-              </div>
-            )
+            <div className="space-y-4">
+              {profile?.bio && (
+                <div className="pt-2 border-t border-frost-50/5">
+                  <p className="text-secondary/80 text-sm italic">"{profile.bio}"</p>
+                </div>
+              )}
+              {profile?.controlsLayout && (
+                <div className="pt-4 border-t border-frost-50/5 space-y-2">
+                  <span className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest block">Controls Layout</span>
+                  <div className="rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10 max-w-md max-h-56 flex items-center justify-center">
+                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-full object-contain max-h-56" />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {success && (

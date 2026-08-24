@@ -101,16 +101,21 @@ const updateProfile = async (req, res, next) => {
     const profile = await PlayerProfile.findOne({ userId: req.user._id });
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found.' });
 
-    // Allow updating safe fields including pubgUid and avatarPosition
-    const allowed = ['avatar', 'bio', 'pubgUid', 'avatarPosition', 'whatsapp', 'tiktok', 'instagram', 'yearsPlaying', 'lookingFor'];
+    // Allow updating safe fields including pubgUid, avatarPosition, and controlsLayout
+    const allowed = ['avatar', 'bio', 'pubgUid', 'avatarPosition', 'whatsapp', 'tiktok', 'instagram', 'yearsPlaying', 'lookingFor', 'controlsLayout'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
 
-    // Handle avatar file upload if present
-    if (req.file) {
-      updates.avatar = await uploadToCloudinary(req.file.buffer);
+    // Handle avatar and controlsLayout file uploads if present
+    if (req.files) {
+      if (req.files['avatarFile'] && req.files['avatarFile'][0]) {
+        updates.avatar = await uploadToCloudinary(req.files['avatarFile'][0].buffer);
+      }
+      if (req.files['controlsLayoutFile'] && req.files['controlsLayoutFile'][0]) {
+        updates.controlsLayout = await uploadToCloudinary(req.files['controlsLayoutFile'][0].buffer);
+      }
     }
 
     Object.assign(profile, updates);

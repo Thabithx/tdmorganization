@@ -256,6 +256,19 @@ const PlayerProfile = () => {
                 </Card>
               </div>
 
+              {/* Controls Layout */}
+              {profile.controlsLayout && (
+                <div className="space-y-3">
+                  <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">
+                    <FileText className="w-4 h-4 text-frost-50" />
+                    <span>Controls Layout</span>
+                  </h3>
+                  <Card variant="default" className="p-5 border-frost-50/5 max-w-lg overflow-hidden bg-[#0B101A] flex items-center justify-center">
+                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-auto object-contain max-h-64 rounded-lg" />
+                  </Card>
+                </div>
+              )}
+
               {/* Notable Victories */}
               <div className="space-y-3">
                 <h3 className="font-heading text-sm font-bold text-secondary uppercase tracking-widest flex items-center space-x-2">

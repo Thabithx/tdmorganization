@@ -8,7 +8,10 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 
 router.get('/', getPlayers);
 router.get('/:id', optionalAuth, getPlayerById);
-router.put('/', protect, upload.single('avatarFile'), updateProfile);
+router.put('/', protect, upload.fields([
+  { name: 'avatarFile', maxCount: 1 },
+  { name: 'controlsLayoutFile', maxCount: 1 }
+]), updateProfile);
 router.get('/:id/history', getPlayerMatchHistory);
 
 module.exports = router;
