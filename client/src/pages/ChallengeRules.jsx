@@ -60,8 +60,9 @@ const ChallengeRules = () => {
       {/* Recording & App Verification Protocol */}
       <Section icon={Camera} title="Recording & Verification Protocol" color="frost-50">
         <p className="text-secondary text-xs uppercase tracking-widest font-semibold mb-3">Recording format is mandatory for both players:</p>
-        <Rule type="required" text="Players must record BOTH Screen Recording (SR) and Handcam. Both formats are mandatory." />
-        <Rule type="required" text="Right after the match ID and Password are given, you must start recording both the SR and Handcam immediately." />
+        <Rule type="required" text="Players must submit a full Screen Recording (SR). Handcam is NOT required." />
+        <Rule type="required" text="Right after the match ID and Password are given, you must start the Screen Recording immediately." />
+        <Rule type="required" text="During the verification stage of your recording, you must show the battery usage apps list and show the VPN connection status/settings." />
         <Rule type="required" text="Before joining the room, you must open your mobile settings, navigate to 'Apps', and scroll through to show all apps installed in your device." />
         <Rule type="banned" text="Any suspicious or illegal apps found installed on the device will lead to instant disqualification." />
         <Rule type="required" text="After showing installed apps, you must open PUBG Mobile directly via the official App Store (App Store or Play Store), then enter the room." />
