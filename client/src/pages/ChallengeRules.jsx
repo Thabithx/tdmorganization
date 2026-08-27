@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Camera, Smartphone, Monitor, Swords, Ban, Trophy, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
+import { ShieldAlert, Camera, Smartphone, Monitor, Swords, Ban, Trophy, AlertTriangle, CheckCircle, XCircle, Info, Mic, Server } from 'lucide-react';
 import Card from '../components/ui/Card';
 
 const Section = ({ icon: Icon, title, color = 'frost-50', children }) => (
@@ -53,67 +53,69 @@ const ChallengeRules = () => {
           <span className="text-frost-50">Match Protocol</span>
         </h1>
         <p className="text-secondary text-sm max-w-xl mx-auto leading-relaxed">
-          All challenges conducted through FROST must follow these rules. Violating any of these rules may result in penalties, match disqualification, or a permanent ban.
+          All challenges conducted through FROST must strictly adhere to these regulations. Failure to follow recording format or in-game rules will lead to immediate disqualification.
         </p>
       </div>
 
-      {/* Pre-Match Evidence Requirements */}
-      <Section icon={Camera} title="Pre-Match Evidence Requirements" color="frost-50">
-        <p className="text-secondary text-xs uppercase tracking-widest font-semibold mb-3">Both players must provide the following BEFORE the match begins:</p>
-        <Rule type="required" text="Screenshot of your in-game controls layout. Your control setup must be clearly visible." />
-        <Rule type="required" text="Show all currently open apps on your device before entering the match room. This ensures no third-party tools, macros, or assist apps are running." />
-        <Rule type="required" text="Open PUBG Mobile directly from the Google Play Store or Apple App Store and show the app page (to confirm the official, unmodified version is installed)." />
-        <Rule type="required" text="Screen recording of the entire match must be submitted to the FROST admin after the match. Recordings will be shared with both players." />
+      {/* Recording & App Verification Protocol */}
+      <Section icon={Camera} title="Recording & Verification Protocol" color="frost-50">
+        <p className="text-secondary text-xs uppercase tracking-widest font-semibold mb-3">Recording format is mandatory for both players:</p>
+        <Rule type="required" text="Players must record BOTH Screen Recording (SR) and Handcam. Both formats are mandatory." />
+        <Rule type="required" text="Right after the match ID and Password are given, you must start recording both the SR and Handcam immediately." />
+        <Rule type="required" text="Before joining the room, you must open your mobile settings, navigate to 'Apps', and scroll through to show all apps installed in your device." />
+        <Rule type="banned" text="Any suspicious or illegal apps found installed on the device will lead to instant disqualification." />
+        <Rule type="required" text="After showing installed apps, you must open PUBG Mobile directly via the official App Store (App Store or Play Store), then enter the room." />
+        <Rule type="warning" text="Important: Not accurately following these recording and startup verification formats will lead to direct disqualification." />
       </Section>
 
       {/* Gameplay Rules */}
-      <Section icon={Swords} title="Gameplay Rules" color="amber-400">
-        <Rule type="warning" text="No tap-fire (automatic fire using tap): Using tap-fire is a minus point and will be noted by the admin in the match record." />
-        <Rule type="banned" text="No grenades allowed during the match. Any grenade usage is grounds for admin intervention." />
-        <Rule type="banned" text="No sliding allowed. Players must engage standing or crouched. Slide abuse is a foul." />
-        <Rule type="banned" text="Camping / staying in a single position for too long without changing positions is a violation. Admin will make a final decision if reported. Keep it dynamic." />
-        <Rule type="good" text="Respect your opponent. Play fair, play aggressive, and play to win." />
-        <Rule type="good" text="Follow all official TDM community rules and code of conduct at all times." />
-        <Rule type="good" text="Have a good game — FROST is about proving skill, not exploiting loopholes." />
+      <Section icon={Swords} title="1v1 Gameplay Rules" color="amber-400">
+        <p className="text-secondary text-xs uppercase tracking-widest font-semibold mb-3">Official TDM 1v1 Battle Rules:</p>
+        <Rule type="banned" text="Strictly NO grenades or stun grenades allowed during the match." />
+        <Rule type="banned" text="Slide must be turned OFF (Slide off only)." />
+        <Rule type="warning" text="Only M416 weapon is allowed. Fisting is allowed but not recommended." />
+        <Rule type="warning" text="Hold-in Time (Camping): Staying in one place for more than 25 seconds is strictly prohibited." />
+        <Rule type="banned" text="No tap-fire (automatic firing using tap triggers or macros) and no info-sharing/unauthorized assists. Violating this will lead to a penalty of minus kills (- kills)." />
+        <Rule type="good" text="Always have respect for your opponent and have a good game." />
       </Section>
 
-      {/* Screen Recording */}
-      <Section icon={Monitor} title="Screen Recording Protocol" color="emerald-400">
-        <Rule type="required" text="Both the challenger and the opponent must record their full match screen from start to finish." />
-        <Rule type="required" text="Recordings must be submitted to the FROST admin immediately after the match ends." />
-        <Rule type="default" text="FROST admin will review the recordings before confirming the match result. Results will not be finalized without verified recordings." />
-        <Rule type="default" text="Recordings are shared with both players for transparency. All data is stored securely." />
-        <Rule type="good" text="Tip: Use your device's built-in screen recorder. Make sure audio is on for verification." />
+      {/* Communication Rules */}
+      <Section icon={Mic} title="Communication" color="sky-400">
+        <Rule type="required" text="Open Mic Rule: If your opponent requests you to open your mic and talk during the match, you must comply and talk." />
       </Section>
 
-      {/* Device Verification */}
-      <Section icon={Smartphone} title="Device & App Verification" color="sky-400">
-        <Rule type="required" text="Before entering the room, show all background apps open on your device. Close any suspicious third-party apps." />
-        <Rule type="required" text="Show that PUBG Mobile is opened directly from the official app store listing, confirming it's the unmodified official version." />
-        <Rule type="warning" text="Any unknown or suspicious apps visible during device verification will be flagged and reviewed by admin." />
-        <Rule type="default" text="Device screenshots/recordings of the verification step must be submitted along with your match recording." />
+      {/* Room Server Creation Rules */}
+      <Section icon={Server} title="Server & Room Creation (Ping Fairness)" color="emerald-400">
+        <p className="text-secondary text-xs uppercase tracking-widest font-semibold mb-3">To ensure a fair play experience for cross-regional matches, rooms will be created as follows (BO3):</p>
+        <div className="space-y-4 pt-2">
+          <div className="p-4 rounded-xl bg-frost-800/40 border border-frost-50/5 space-y-2">
+            <h4 className="text-sm font-heading font-bold text-frost-50 uppercase">Asia vs Europe</h4>
+            <p className="text-xs text-secondary">Room 1: Asia Server · Room 2: Europe Server · Room 3: Asia Server</p>
+          </div>
+          <div className="p-4 rounded-xl bg-frost-800/40 border border-frost-50/5 space-y-2">
+            <h4 className="text-sm font-heading font-bold text-frost-50 uppercase">Asia vs North America</h4>
+            <p className="text-xs text-secondary">Room 1: Asia Server · Room 2: North America Server · Room 3: Europe Server</p>
+          </div>
+          <div className="p-4 rounded-xl bg-frost-800/40 border border-frost-50/5 space-y-2">
+            <h4 className="text-sm font-heading font-bold text-frost-50 uppercase">North America vs Europe</h4>
+            <p className="text-xs text-secondary">Room 1: Europe Server · Room 2: North America Server · Room 3: Middle East Server</p>
+          </div>
+        </div>
       </Section>
 
-      {/* Violations & Bans */}
+      {/* Violations & Penalties */}
       <Section icon={Ban} title="Violations & Penalties" color="red-400">
         <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 mb-4">
           <p className="text-red-300 text-xs font-heading font-bold uppercase tracking-widest text-center">⚠️ ZERO TOLERANCE POLICY ⚠️</p>
         </div>
-        <Rule type="banned" text="Discovering any form of cheating, hacking, modded APKs, aim assist tools, or malicious activities will result in an IMMEDIATE LIFETIME BAN from FROST." />
-        <Rule type="banned" text="Providing false or fabricated evidence (screenshots, recordings) will result in a permanent ban." />
-        <Rule type="banned" text="Match manipulation, collusion with your opponent, or throwing a match is a bannable offense." />
-        <Rule type="banned" text="Harassment of other players, admins, or staff will not be tolerated and may result in suspension." />
-        <Rule type="warning" text="Admin decisions on match results are final. Appeals may be submitted within 24 hours with supporting evidence." />
-        <Rule type="warning" text="Repeated minor violations (tap-fire, camping) will accumulate and may escalate to suspension." />
+        <Rule type="banned" text="Any form of cheating, hacking, mods, third-party assist tools, or falsified recording submissions will result in an IMMEDIATE LIFETIME BAN from FROST." />
+        <Rule type="warning" text="Admin decisions on match results, disputes, and disqualifications are absolute and final." />
       </Section>
 
       {/* Fair Play */}
       <Section icon={Trophy} title="FROST Code of Fair Play" color="amber-300">
-        <Rule type="good" text="Come to every challenge prepared — warm up, check your controls, and be ready to fight." />
         <Rule type="good" text="Win with dignity. Lose with respect. Every match is an opportunity to improve." />
         <Rule type="good" text="The FROST leaderboard is earned through skill and integrity. Protect that integrity." />
-        <Rule type="good" text="If you witness rule violations by your opponent, report them to admin immediately with evidence." />
-        <Rule type="default" text="FROST admins manually manage and verify every match. If you have concerns, contact admin through the platform." />
       </Section>
 
       {/* Admin Contact */}
