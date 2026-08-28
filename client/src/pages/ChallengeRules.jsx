@@ -66,6 +66,7 @@ const ChallengeRules = () => {
         <Rule type="required" text="Before joining the room, you must open your mobile settings, navigate to 'Apps', and scroll through to show all apps installed in your device." />
         <Rule type="banned" text="Any suspicious or illegal apps found installed on the device will lead to instant disqualification." />
         <Rule type="required" text="After showing installed apps, you must open PUBG Mobile directly via the official App Store (App Store or Play Store), then enter the room." />
+        <Rule type="required" text="Android players: Must follow the exact same verification format, log out of the game, perform a 'Routine Repair', and then join the room." />
         <Rule type="warning" text="Important: Not accurately following these recording and startup verification formats will lead to direct disqualification." />
       </Section>
 
