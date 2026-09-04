@@ -42,6 +42,60 @@ const checkAndLazyExpire = async (challenge) => {
           relatedEntity: 'Challenge',
           relatedId: challenge._id
         });
+        
+        // 4 DECLINES PENALTY LOGIC
+        const defenderRankDoc = await Ranking.findOne({ platform: populated.platform, players: populated.defenderId._id });
+        if (defenderRankDoc && defenderRankDoc.rank <= 10) {
+          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          const declineCount = await Challenge.countDocuments({
+            defenderId: populated.defenderId._id,
+            status: { $in: ['REJECTED', 'EXPIRED'] },
+            $or: [
+              { rejectedAt: { $gte: sevenDaysAgo } },
+              { expiredAt: { $gte: sevenDaysAgo } },
+              { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+            ]
+          });
+
+          if (declineCount >= 4) {
+            // Mark inactive
+            populated.defenderId.status = 'INACTIVE';
+            await populated.defenderId.save();
+
+            // Remove from rank
+            const User = require('../models/User'); // Import User inside block to avoid circular deps if any
+            const systemAdmin = await User.findOne({ role: 'ADMIN' });
+            if (systemAdmin) {
+              await rankingService.manualAdminAdjustment({
+                action: 'REMOVE_FROM_RANK',
+                platform: populated.platform,
+                playerId: populated.defenderId._id,
+                adminId: systemAdmin._id
+              });
+            }
+
+            // Notify Admins
+            const admins = await User.find({ role: 'ADMIN' });
+            for (const admin of admins) {
+              await Notification.create({
+                userId: admin._id,
+                type: 'PLAYER_INACTIVE',
+                message: `Player ${populated.defenderId.ign} has been marked INACTIVE and removed from the rankings due to 4 declined/expired challenges.`,
+                relatedEntity: 'PlayerProfile',
+                relatedId: populated.defenderId._id
+              });
+            }
+
+            // Notify Player
+            await Notification.create({
+              userId: populated.defenderId.userId,
+              type: 'PLAYER_INACTIVE',
+              message: `Your profile has been marked INACTIVE and removed from the ranking list due to 4 declined/expired challenges within 7 days.`,
+              relatedEntity: 'PlayerProfile',
+              relatedId: populated.defenderId._id
+            });
+          }
+        }
       }
       return challenge;
     }

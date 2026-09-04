@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [profile, setProfile] = useState(null);
+  const [declineCount, setDeclineCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
         if (res.data.success) {
           setUser(res.data.data.user);
           setProfile(res.data.data.profile);
+          setDeclineCount(res.data.data.declineCount || 0);
         } else {
           logout();
         }
@@ -43,11 +45,12 @@ export const AuthProvider = ({ children }) => {
     fetchMe();
   }, [token]);
 
-  const login = (newToken, userData, profileData) => {
+  const login = (newToken, userData, profileData, declineCountData) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
     setProfile(profileData);
+    setDeclineCount(declineCountData || 0);
   };
 
   const logout = () => {
@@ -55,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setProfile(null);
+    setDeclineCount(0);
   };
 
   const updateLocalProfile = (updatedProfile) => {
@@ -65,8 +69,9 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     profile,
+    declineCount,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!token,
     isAdmin: user?.role === 'ADMIN',
     login,
     logout,

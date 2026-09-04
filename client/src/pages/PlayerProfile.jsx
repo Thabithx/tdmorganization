@@ -94,8 +94,13 @@ const PlayerProfile = () => {
               <PlatformBadge platform={profile.platform} />
             </div>
 
-            <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-[#F4FBFF] uppercase tracking-wider">
+            <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-[#F4FBFF] uppercase tracking-wider flex items-center gap-3">
               {profile.ign}
+              {profile.status === 'INACTIVE' && (
+                <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-xs px-2 py-1 rounded-md font-semibold tracking-widest">
+                  INACTIVE
+                </span>
+              )}
             </h1>
             <p className="text-secondary text-xs uppercase tracking-widest font-semibold">
               UID: {profile.pubgUid}

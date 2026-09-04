@@ -9,7 +9,7 @@ const playerProfileSchema = new mongoose.Schema({
   avatar: { type: String, default: '/default_avatar.png' },
   avatarPosition: { type: String, default: 'center top' },
   bio: { type: String, default: '', maxlength: 300 },
-  status: { type: String, enum: ['ACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
+  status: { type: String, enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
   tiktok: { type: String, default: '' },
   instagram: { type: String, default: '' },
   yearsPlaying: { type: Number, default: 0 },

@@ -46,8 +46,24 @@ const login = async (req, res, next) => {
     if (!match) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
 
     const profile = await PlayerProfile.findOne({ userId: user._id });
+    
+    let declineCount = 0;
+    if (profile) {
+      const Challenge = require('../models/Challenge');
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      declineCount = await Challenge.countDocuments({
+        defenderId: profile._id,
+        status: { $in: ['REJECTED', 'EXPIRED'] },
+        $or: [
+          { rejectedAt: { $gte: sevenDaysAgo } },
+          { expiredAt: { $gte: sevenDaysAgo } },
+          { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+        ]
+      });
+    }
+
     const token = generateToken(user._id);
-    res.json({ success: true, data: { token, user, profile } });
+    res.json({ success: true, data: { token, user, profile, declineCount } });
   } catch (err) {
     next(err);
   }
@@ -56,7 +72,21 @@ const login = async (req, res, next) => {
 const getMe = async (req, res, next) => {
   try {
     const profile = await PlayerProfile.findOne({ userId: req.user._id });
-    res.json({ success: true, data: { user: req.user, profile } });
+    let declineCount = 0;
+    if (profile) {
+      const Challenge = require('../models/Challenge');
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      declineCount = await Challenge.countDocuments({
+        defenderId: profile._id,
+        status: { $in: ['REJECTED', 'EXPIRED'] },
+        $or: [
+          { rejectedAt: { $gte: sevenDaysAgo } },
+          { expiredAt: { $gte: sevenDaysAgo } },
+          { status: 'EXPIRED', updatedAt: { $gte: sevenDaysAgo } }
+        ]
+      });
+    }
+    res.json({ success: true, data: { user: req.user, profile, declineCount } });
   } catch (err) {
     next(err);
   }

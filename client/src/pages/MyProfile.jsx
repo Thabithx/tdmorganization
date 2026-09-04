@@ -168,7 +168,14 @@ const MyProfile = () => {
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             </div>
             <div className="space-y-2">
-              <h2 className="font-heading text-2xl font-extrabold text-[#F4FBFF] uppercase tracking-wider">{profile?.ign}</h2>
+              <h2 className="font-heading text-2xl font-extrabold text-[#F4FBFF] uppercase tracking-wider flex items-center gap-3">
+                {profile?.ign}
+                {profile?.status === 'INACTIVE' && (
+                  <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] px-2 py-0.5 rounded uppercase font-semibold tracking-widest">
+                    INACTIVE
+                  </span>
+                )}
+              </h2>
               <div className="flex items-center space-x-2">
                 <RankBadge rank={profile?.currentRank} size="sm" />
                 <PlatformBadge platform={profile?.platform} />

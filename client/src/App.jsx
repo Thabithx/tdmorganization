@@ -57,9 +57,26 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const MainLayoutWrapper = ({ children }) => {
+  const { isAuthenticated, declineCount, profile } = useAuth();
+  const isInactive = profile?.status === 'INACTIVE';
+
   return (
     <div className="flex flex-col min-h-screen bg-[#05070D]">
       <Navbar />
+      {isAuthenticated && isInactive && (
+        <div className="w-full bg-red-950/90 border-b border-red-500/50 p-3 text-center z-50">
+          <p className="text-red-200 text-xs sm:text-sm font-bold max-w-7xl mx-auto px-4 tracking-wide">
+            ⚠️ ACCOUNT INACTIVE: You have been removed from the rankings due to repeatedly declining or ignoring challenges. Contact an admin to appeal.
+          </p>
+        </div>
+      )}
+      {isAuthenticated && !isInactive && declineCount === 3 && (
+        <div className="w-full bg-amber-950/90 border-b border-amber-500/50 p-3 text-center z-50">
+          <p className="text-amber-200 text-xs sm:text-sm font-bold max-w-7xl mx-auto px-4 tracking-wide">
+            ⚠️ FINAL WARNING: You have declined or ignored 3 challenges this week. If you ignore the next challenge and let it expire, you will be marked INACTIVE and removed from the ranking list!
+          </p>
+        </div>
+      )}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8">
         {children}
       </div>
