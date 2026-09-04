@@ -6,10 +6,14 @@ const cloudinary = require('../config/cloudinary');
 
 const DEFAULT_AVATAR = 'https://res.cloudinary.com/ag9gfghc/image/upload/v1786952689/frost_defaults/default_avatar.png';
 
-const uploadToCloudinary = (fileBuffer, folder = 'frost_avatars') => {
+const uploadToCloudinary = (fileBuffer, folder = 'frost_avatars', isAvatar = true) => {
   return new Promise((resolve, reject) => {
+    const transformation = isAvatar
+      ? [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }]
+      : [{ width: 1280, crop: 'limit' }];
+
     const stream = cloudinary.uploader.upload_stream(
-      { folder, transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }] },
+      { folder, transformation },
       (error, result) => {
         if (error) return reject(error);
         resolve(result.secure_url);
@@ -111,10 +115,10 @@ const updateProfile = async (req, res, next) => {
     // Handle avatar and controlsLayout file uploads if present
     if (req.files) {
       if (req.files['avatarFile'] && req.files['avatarFile'][0]) {
-        updates.avatar = await uploadToCloudinary(req.files['avatarFile'][0].buffer);
+        updates.avatar = await uploadToCloudinary(req.files['avatarFile'][0].buffer, 'frost_avatars', true);
       }
       if (req.files['controlsLayoutFile'] && req.files['controlsLayoutFile'][0]) {
-        updates.controlsLayout = await uploadToCloudinary(req.files['controlsLayoutFile'][0].buffer);
+        updates.controlsLayout = await uploadToCloudinary(req.files['controlsLayoutFile'][0].buffer, 'frost_controls', false);
       }
     }
 
