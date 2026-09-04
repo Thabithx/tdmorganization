@@ -263,8 +263,8 @@ const PlayerProfile = () => {
                     <FileText className="w-4 h-4 text-frost-50" />
                     <span>Controls Layout</span>
                   </h3>
-                  <Card variant="default" className="p-5 border-frost-50/5 max-w-lg overflow-hidden bg-[#0B101A] flex items-center justify-center">
-                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-auto object-contain max-h-64 rounded-lg" />
+                  <Card variant="default" className="p-2 border-frost-50/5 overflow-hidden bg-[#0B101A]">
+                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-auto object-contain rounded-lg" style={{ display: 'block' }} />
                   </Card>
                 </div>
               )}

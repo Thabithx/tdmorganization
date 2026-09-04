@@ -366,8 +366,8 @@ const MyProfile = () => {
                   Controls Layout Picture
                 </label>
                 {currentControlsLayout ? (
-                  <div className="relative rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10 max-h-48 max-w-md flex items-center justify-center">
-                    <img src={currentControlsLayout} alt="Controls Layout" className="w-full h-full object-contain max-h-48" />
+                  <div className="rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10">
+                    <img src={currentControlsLayout} alt="Controls Layout" className="w-full h-auto object-contain block" />
                   </div>
                 ) : (
                   <div className="p-4 rounded-xl border border-dashed border-frost-50/20 text-center text-xs text-secondary/60">
@@ -414,8 +414,8 @@ const MyProfile = () => {
               {profile?.controlsLayout && (
                 <div className="pt-4 border-t border-frost-50/5 space-y-2">
                   <span className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest block">Controls Layout</span>
-                  <div className="rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10 max-w-md max-h-56 flex items-center justify-center">
-                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-full object-contain max-h-56" />
+                  <div className="rounded-xl overflow-hidden bg-[#0B101A] border border-frost-50/10">
+                    <img src={profile.controlsLayout} alt={`${profile.ign}'s Controls Layout`} className="w-full h-auto object-contain block" />
                   </div>
                 </div>
               )}

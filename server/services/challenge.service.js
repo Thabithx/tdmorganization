@@ -176,6 +176,15 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   // Get challenger's current rank
   const challengerRank = await rankingService.getPlayerRank(challengerProfile._id, challengerProfile.platform);
 
+  // Unranked players can only challenge ranks 4–10.
+  // Ranks 1–3 can only be challenged by ranked players.
+  if (challengerRank === null && defenderRank <= 3) {
+    throw Object.assign(
+      new Error('Unranked players cannot challenge Top 3 ranked players (Ranks #1–#3). You must be ranked first.'),
+      { statusCode: 403 }
+    );
+  }
+
   const challenge = await Challenge.create({
     challengerId: challengerProfile._id,
     defenderId: defenderProfile._id,
