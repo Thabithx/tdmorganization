@@ -149,15 +149,22 @@ const PlayerProfile = () => {
             {/* Actions */}
             <div className="flex items-center space-x-3 pt-2">
               {canChallenge && samePlatform && (
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => navigate(`/challenge/${profile._id}`)}
-                  className="flex items-center space-x-2"
-                >
-                  <Swords className="w-4 h-4" />
-                  <span>CHALLENGE PLAYER</span>
-                </Button>
+                data.defenderPendingCount >= 3 ? (
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-lg border border-amber-500/20 text-amber-500 text-xs font-semibold bg-amber-500/5">
+                    <Shield className="w-4 h-4" />
+                    <span>SLOTS FULL (QUEUE AT MAX)</span>
+                  </div>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate(`/challenge/${profile._id}`)}
+                    className="flex items-center space-x-2"
+                  >
+                    <Swords className="w-4 h-4" />
+                    <span>CHALLENGE PLAYER</span>
+                  </Button>
+                )
               )}
               {canChallenge && !samePlatform && (
                 <div className="flex items-center space-x-2 px-4 py-2 rounded-lg border border-secondary/20 text-secondary text-xs font-semibold">

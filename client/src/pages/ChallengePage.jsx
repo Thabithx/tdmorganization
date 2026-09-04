@@ -20,6 +20,7 @@ const ChallengePage = () => {
   const [opponent, setOpponent] = useState(null);
   const [opponentRank, setOpponentRank] = useState(null);
   const [rollingChallengesCount, setRollingChallengesCount] = useState(0);
+  const [defenderPendingCount, setDefenderPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [amount, setAmount] = useState('');
@@ -35,6 +36,7 @@ const ChallengePage = () => {
           setOpponent(res.data.profile);
           setOpponentRank(res.data.currentRank);
           setRollingChallengesCount(res.data.rollingChallengesCount || 0);
+          setDefenderPendingCount(res.data.defenderPendingCount || 0);
           const min = getMinimumChallengeAmount(res.data.currentRank);
           setAmount(String(min));
         } else {
@@ -114,13 +116,26 @@ const ChallengePage = () => {
     </div>
   );
 
-  if (rollingChallengesCount >= 2) return (
+  if (rollingChallengesCount >= 3) return (
     <div className="max-w-lg mx-auto py-16">
       <Card variant="default" className="p-8 text-center border-red-500/20">
         <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" />
         <h2 className="font-heading text-lg font-bold text-red-200 uppercase mb-2">CHALLENGE LIMIT REACHED</h2>
         <p className="text-secondary text-sm mb-6">
-          You have already challenged this player twice in the last 7 days.
+          You have already challenged this player 3 times in the last 7 days.
+        </p>
+        <Button variant="secondary" size="md" onClick={() => navigate(-1)}>GO BACK</Button>
+      </Card>
+    </div>
+  );
+
+  if (defenderPendingCount >= 3) return (
+    <div className="max-w-lg mx-auto py-16">
+      <Card variant="default" className="p-8 text-center border-amber-500/20">
+        <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+        <h2 className="font-heading text-lg font-bold text-amber-200 uppercase mb-2">CHALLENGE SLOTS FULL</h2>
+        <p className="text-secondary text-sm mb-6">
+          {opponent?.ign} currently has the maximum of 3 pending challenges in their queue. Please wait until they respond to existing challenges before issuing a new one.
         </p>
         <Button variant="secondary" size="md" onClick={() => navigate(-1)}>GO BACK</Button>
       </Card>

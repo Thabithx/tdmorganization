@@ -45,6 +45,11 @@ export const updateChallengeStatus = async (id, status, reason) => {
   return res.data;
 };
 
+export const resolveAdminReview = async (id, resolution) => {
+  const res = await api.post(`/admin/challenges/${id}/resolve-review`, { resolution });
+  return res.data;
+};
+
 export const getAdminPayments = async (params) => {
   const res = await api.get('/admin/payments', { params });
   return res.data;

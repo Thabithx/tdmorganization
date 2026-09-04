@@ -4,12 +4,15 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { StatusBadge, PlatformBadge } from '../ui/Badge';
 import { formatAmount, formatDate, getNetPrize } from '../../utils/formatters';
+import Modal from '../ui/Modal';
 import useAuth from '../../hooks/useAuth';
 import * as paymentService from '../../services/payment.service';
 
-const ChallengeCard = ({ challenge, onStatusUpdate }) => {
+const ChallengeCard = ({ challenge, onStatusUpdate, isOldestPending }) => {
   const { profile } = useAuth();
   const [loadingAction, setLoadingAction] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewReason, setReviewReason] = useState('');
 
   const isChallenger = challenge.challengerId?._id?.toString() === profile?._id?.toString();
   const opponent = isChallenger ? challenge.defenderId : challenge.challengerId;
@@ -122,28 +125,46 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
       {/* Actions */}
       <div className="mt-4 pt-3 border-t border-frost-50/5 flex justify-end space-x-2">
         {!isChallenger && challenge.status === 'PENDING' && (
-          <>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleReject}
-              isLoading={loadingAction}
-              className="flex items-center space-x-1"
-            >
-              <XCircle className="w-3.5 h-3.5" />
-              <span>REJECT</span>
-            </Button>
-            <Button
-              variant="success"
-              size="sm"
-              onClick={handleAccept}
-              isLoading={loadingAction}
-              className="flex items-center space-x-1"
-            >
-              <CheckCircle className="w-3.5 h-3.5" />
-              <span>ACCEPT</span>
-            </Button>
-          </>
+          <div className="flex flex-col w-full gap-2">
+            {!isOldestPending && (
+              <p className="text-amber-400 text-xs text-center font-semibold uppercase tracking-widest bg-amber-500/10 py-1.5 rounded">
+                Respond to older challenges first
+              </p>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowReviewModal(true)}
+                disabled={loadingAction || !isOldestPending}
+                className="flex items-center space-x-1"
+              >
+                <span>REQUEST REVIEW</span>
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleReject}
+                isLoading={loadingAction}
+                disabled={!isOldestPending}
+                className="flex items-center space-x-1"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                <span>REJECT</span>
+              </Button>
+              <Button
+                variant="success"
+                size="sm"
+                onClick={handleAccept}
+                isLoading={loadingAction}
+                disabled={!isOldestPending}
+                className="flex items-center space-x-1"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>ACCEPT</span>
+              </Button>
+            </div>
+          </div>
         )}
 
         {isChallenger && challenge.status === 'PENDING' && (
@@ -190,6 +211,43 @@ const ChallengeCard = ({ challenge, onStatusUpdate }) => {
           </div>
         )}
       </div>
+
+      <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="REQUEST ADMIN REVIEW" maxWidth="max-w-md">
+        <div className="space-y-4">
+          <p className="text-secondary text-sm">
+            If you have a valid emergency (traveling, sick, etc.), you can request an Admin Review instead of rejecting the challenge. The timer will pause until an Admin resolves it.
+          </p>
+          <div>
+            <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Reason</label>
+            <textarea
+              value={reviewReason}
+              onChange={(e) => setReviewReason(e.target.value)}
+              className="w-full bg-[#06090F] border border-frost-50/10 rounded-xl px-4 py-3 text-sm text-[#F4FBFF] focus:outline-none focus:border-[#8BE3FF]/50 transition-colors"
+              placeholder="Explain why you cannot accept this challenge..."
+              rows={3}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="secondary" onClick={() => setShowReviewModal(false)} disabled={loadingAction}>Cancel</Button>
+            <Button
+              variant="primary"
+              onClick={async () => {
+                if (!reviewReason.trim()) return alert("Please enter a reason.");
+                setLoadingAction(true);
+                try {
+                  await onStatusUpdate(challenge._id, 'admin-review', reviewReason);
+                  setShowReviewModal(false);
+                } catch (_) {}
+                setLoadingAction(false);
+              }}
+              isLoading={loadingAction}
+              disabled={!reviewReason.trim()}
+            >
+              Submit Request
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 };

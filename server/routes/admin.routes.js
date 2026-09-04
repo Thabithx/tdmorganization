@@ -32,6 +32,7 @@ router.post('/rankings/manual-update', manualRankingUpdate);
 router.get('/challenges', getAdminChallenges);
 router.get('/challenges/:id', getAdminChallengeById);
 router.put('/challenges/:id/status', updateChallengeStatus);
+router.post('/challenges/:id/resolve-review', require('../controllers/admin.controller').resolveAdminReview);
 
 router.get('/payments', getAdminPayments);
 router.post('/payments/:id/confirm', confirmPaymentManual);

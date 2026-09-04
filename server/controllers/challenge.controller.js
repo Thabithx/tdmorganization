@@ -76,7 +76,19 @@ const getChallengeById = async (req, res, next) => {
       .populate('defenderId', 'ign pubgUid platform avatar');
     if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found.' });
     challenge = await challengeService.checkAndLazyExpire(challenge);
-    res.json({ success: true, data: challenge });
+
+    let isOldestPending = false;
+    if (challenge.status === 'PENDING') {
+      const oldest = await Challenge.findOne({
+        defenderId: challenge.defenderId._id,
+        status: 'PENDING'
+      }).sort({ createdAt: 1 });
+      if (oldest && oldest._id.toString() === challenge._id.toString()) {
+        isOldestPending = true;
+      }
+    }
+
+    res.json({ success: true, data: challenge, meta: { isOldestPending } });
   } catch (err) {
     next(err);
   }
@@ -118,4 +130,18 @@ const cancelChallenge = async (req, res, next) => {
   }
 };
 
-module.exports = { createChallenge, getChallenges, getChallengeById, acceptChallenge, rejectChallenge, cancelChallenge };
+const requestAdminReview = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const challenge = await challengeService.requestAdminReview({
+      challengeId: req.params.id,
+      defenderUserId: req.user._id,
+      reason
+    });
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { createChallenge, getChallenges, getChallengeById, acceptChallenge, rejectChallenge, cancelChallenge, requestAdminReview };

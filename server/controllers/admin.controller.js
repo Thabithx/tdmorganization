@@ -833,6 +833,40 @@ const correctMatchResult = async (req, res, next) => {
   }
 };
 
+const resolveAdminReview = async (req, res, next) => {
+  try {
+    const { resolution } = req.body; // 'APPROVE' or 'DENY'
+    const challenge = await Challenge.findById(req.params.id);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (challenge.status !== 'ADMIN_REVIEW') return res.status(400).json({ success: false, message: 'Not in ADMIN_REVIEW status' });
+
+    if (resolution === 'APPROVE') {
+      challenge.status = 'CANCELLED';
+      challenge.cancellationReason = 'ADMIN_REVIEW_APPROVED';
+    } else if (resolution === 'DENY') {
+      challenge.status = 'PENDING';
+      challenge.adminReviewRequestedAt = undefined;
+      challenge.adminReviewReason = '';
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid resolution' });
+    }
+
+    await challenge.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      action: `ADMIN_REVIEW_${resolution}`,
+      targetEntity: 'Challenge',
+      targetId: challenge._id,
+      reason: `Resolved via admin dashboard`,
+    });
+
+    res.json({ success: true, data: challenge });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getDashboard, getAdminPlayers, updateAdminPlayer, suspendPlayer, restorePlayer,
   getAdminRankings, manualRankingUpdate,
@@ -840,5 +874,5 @@ module.exports = {
   getAdminPayments, confirmPaymentManual,
   getAdminMatches, getAdminMatchById, addMatchEvidence, updateMatchStatus, confirmMatchResult,
   getAuditLogs, getRankingHistory,
-  globalSearch, getAdminPlayerById, addPlayerNote, deletePlayerNote, getAdminChallengeById, correctMatchResult,
+  globalSearch, getAdminPlayerById, addPlayerNote, deletePlayerNote, getAdminChallengeById, correctMatchResult, resolveAdminReview,
 };

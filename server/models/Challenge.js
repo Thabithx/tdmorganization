@@ -15,7 +15,7 @@ const challengeSchema = new mongoose.Schema({
       'PENDING', 'ACCEPTED', 'REJECTED',
       'PAYMENT_PENDING', 'PAYMENT_CONFIRMED',
       'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING',
-      'COMPLETED', 'DISPUTED', 'CANCELLED', 'EXPIRED'
+      'COMPLETED', 'DISPUTED', 'CANCELLED', 'EXPIRED', 'ADMIN_REVIEW'
     ],
     default: 'PENDING'
   },
@@ -25,9 +25,11 @@ const challengeSchema = new mongoose.Schema({
   paymentDeadline: { type: Date },
   cancellationReason: {
     type: String,
-    enum: ['', 'PLAYER_CANCELLED', 'SYSTEM_CANCELLED', 'DEFENDER_CONFLICT_CANCELLED', 'PAYMENT_TIMEOUT', 'AUTO_EXPIRED'],
+    enum: ['', 'PLAYER_CANCELLED', 'SYSTEM_CANCELLED', 'DEFENDER_CONFLICT_CANCELLED', 'PAYMENT_TIMEOUT', 'AUTO_EXPIRED', 'ADMIN_REVIEW_APPROVED'],
     default: ''
   },
+  adminReviewRequestedAt: { type: Date },
+  adminReviewReason: { type: String, default: '' },
   notes: { type: String, default: '' },
 }, { timestamps: true });
 

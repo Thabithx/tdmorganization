@@ -29,3 +29,8 @@ export const cancelChallenge = async (id) => {
   const res = await api.post(`/challenges/${id}/cancel`);
   return res.data;
 };
+
+export const requestAdminReview = async (id, reason) => {
+  const res = await api.post(`/challenges/${id}/admin-review`, { reason });
+  return res.data;
+};

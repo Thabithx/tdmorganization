@@ -100,6 +100,36 @@ export default function AdminChallengeDetail() {
               </Button>
             </Link>
           )}
+          {challenge.status === 'ADMIN_REVIEW' && (
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={async () => {
+                  if(window.confirm('Approve excuse and cancel challenge safely?')) {
+                    await adminService.resolveAdminReview(id, 'APPROVE');
+                    fetchData();
+                  }
+                }}
+                className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Approve Excuse
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={async () => {
+                  if(window.confirm('Deny excuse and resume challenge timer?')) {
+                    await adminService.resolveAdminReview(id, 'DENY');
+                    fetchData();
+                  }
+                }}
+                className="flex items-center gap-1.5"
+              >
+                <XCircle className="w-3.5 h-3.5" /> Deny Excuse
+              </Button>
+            </>
+          )}
           {canCancel && (
             <Button
               variant="danger"
@@ -112,6 +142,17 @@ export default function AdminChallengeDetail() {
           )}
         </div>
       </div>
+
+      {challenge.status === 'ADMIN_REVIEW' && (
+        <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-amber-400 font-bold tracking-wide">
+            <AlertOctagon className="w-5 h-5" /> ADMIN REVIEW REQUESTED
+          </div>
+          <p className="text-amber-100/70 text-sm">
+            <span className="font-semibold text-amber-200">Reason:</span> {challenge.adminReviewReason}
+          </p>
+        </div>
+      )}
 
       {/* Title */}
       <div className="flex items-center gap-4">

@@ -4,7 +4,7 @@ const PlayerProfile = require('../models/PlayerProfile');
 const Notification = require('../models/Notification');
 const rankingService = require('./ranking.service');
 
-const ACTIVE_STATUSES = ['PENDING', 'ACCEPTED', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING'];
+const ACTIVE_STATUSES = ['PENDING', 'ACCEPTED', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING', 'ADMIN_REVIEW'];
 const IN_PROGRESS_STATUSES = ['ACCEPTED', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING', 'DISPUTED'];
 
 /**
@@ -181,21 +181,31 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     );
   }
 
-  // Anti-Abuse: SYMMETRIC Maximum 2 challenge attempts between the same player pair within rolling 7 days
-  // Excludes automatic system cancellations: DEFENDER_CONFLICT_CANCELLED and PAYMENT_TIMEOUT
+  // Anti-Abuse: Maximum 3 challenge attempts between the exact same player pair within rolling 7 days
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const pairAttemptsCount = await Challenge.countDocuments({
-    $or: [
-      { challengerId: challengerProfile._id, defenderId: defenderProfile._id },
-      { challengerId: defenderProfile._id, defenderId: challengerProfile._id }
-    ],
+    challengerId: challengerProfile._id,
+    defenderId: defenderProfile._id,
     createdAt: { $gte: sevenDaysAgo },
     cancellationReason: { $nin: ['DEFENDER_CONFLICT_CANCELLED', 'PAYMENT_TIMEOUT'] }
   });
 
-  if (pairAttemptsCount >= 2) {
+  if (pairAttemptsCount >= 3) {
     throw Object.assign(
-      new Error("Maximum 2 challenge attempts between you and this player within a rolling 7-day period has been reached."),
+      new Error("Maximum 3 challenge attempts to this opponent within a rolling 7-day period has been reached."),
+      { statusCode: 400 }
+    );
+  }
+
+  // Queue Limit: Defender can only have 3 PENDING challenges max
+  const pendingCount = await Challenge.countDocuments({
+    defenderId: defenderProfile._id,
+    status: 'PENDING'
+  });
+
+  if (pendingCount >= 3) {
+    throw Object.assign(
+      new Error("Challenge slots full. Please wait until they clear their queue."),
       { statusCode: 400 }
     );
   }
@@ -288,6 +298,16 @@ const acceptChallenge = async ({ challengeId, defenderUserId }) => {
 
   if (challenge.status !== 'PENDING') {
     throw Object.assign(new Error(`Challenge is in ${challenge.status} state and cannot be accepted.`), { statusCode: 400 });
+  }
+
+  // FIFO check: ensure this is the oldest pending challenge
+  const oldestPending = await Challenge.findOne({
+    defenderId: defenderProfile._id,
+    status: 'PENDING'
+  }).sort({ createdAt: 1 });
+
+  if (oldestPending && oldestPending._id.toString() !== challenge._id.toString()) {
+    throw Object.assign(new Error('You must respond to your oldest pending challenge first.'), { statusCode: 400 });
   }
 
   // Check single active match constraint for BOTH defender and challenger
@@ -383,6 +403,22 @@ const rejectChallenge = async ({ challengeId, defenderUserId }) => {
     throw Object.assign(new Error(`Challenge cannot be rejected in ${challenge.status} state.`), { statusCode: 400 });
   }
 
+  // Pair decline limit check: Defender cannot decline the SAME challenger more than 2 times in 7 days
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const pairDeclineCount = await Challenge.countDocuments({
+    challengerId: challenge.challengerId._id,
+    defenderId: defenderProfile._id,
+    status: { $in: ['REJECTED', 'EXPIRED'] },
+    createdAt: { $gte: sevenDaysAgo }
+  });
+
+  if (pairDeclineCount >= 2) {
+    throw Object.assign(
+      new Error("You have already declined this specific challenger 2 times in the last 7 days. You must accept their challenge or request Admin Review."),
+      { statusCode: 400 }
+    );
+  }
+
   // Anti-Abuse Decline Limit Check: Top 10 players cannot decline (reject or expire) more than 3 challenges in rolling 7 days
   const defenderRankDoc = await Ranking.findOne({ platform: challenge.platform, players: defenderProfile._id });
   if (defenderRankDoc && defenderRankDoc.rank <= 10) {
@@ -459,4 +495,61 @@ const cancelChallenge = async ({ challengeId, challengerUserId }) => {
   return challenge;
 };
 
-module.exports = { createChallenge, acceptChallenge, rejectChallenge, cancelChallenge, checkAndLazyExpire };
+/**
+ * Request Admin Review (by defender).
+ */
+const requestAdminReview = async ({ challengeId, defenderUserId, reason }) => {
+  const defenderProfile = await PlayerProfile.findOne({ userId: defenderUserId });
+  if (!defenderProfile) throw Object.assign(new Error('Defender profile not found.'), { statusCode: 404 });
+
+  let challenge = await Challenge.findById(challengeId)
+    .populate('challengerId', 'ign userId')
+    .populate('defenderId', 'ign userId');
+  if (!challenge) throw Object.assign(new Error('Challenge not found.'), { statusCode: 404 });
+
+  challenge = await checkAndLazyExpire(challenge);
+
+  if (challenge.defenderId._id.toString() !== defenderProfile._id.toString()) {
+    throw Object.assign(new Error('You are not the defender of this challenge.'), { statusCode: 403 });
+  }
+
+  if (challenge.status !== 'PENDING') {
+    throw Object.assign(new Error(`Cannot request review for a challenge in ${challenge.status} state.`), { statusCode: 400 });
+  }
+
+  if (!reason || reason.trim() === '') {
+    throw Object.assign(new Error('A reason is required to request an Admin Review.'), { statusCode: 400 });
+  }
+
+  challenge.status = 'ADMIN_REVIEW';
+  challenge.adminReviewRequestedAt = new Date();
+  challenge.adminReviewReason = reason;
+  await challenge.save();
+
+  // Notify Admins
+  const User = require('../models/User'); // inside block to avoid circular deps if any
+  const admins = await User.find({ role: 'ADMIN' });
+  for (const admin of admins) {
+    await Notification.create({
+      userId: admin._id,
+      type: 'ADMIN_REVIEW_REQUESTED',
+      message: `${defenderProfile.ign} has requested an Admin Review for their challenge against ${challenge.challengerId.ign}. Reason: ${reason}`,
+      relatedEntity: 'Challenge',
+      relatedId: challenge._id
+    });
+  }
+
+  // Notify challenger
+  await Notification.create({
+    userId: challenge.challengerId.userId,
+    type: 'CHALLENGE_ADMIN_REVIEW',
+    message: `${defenderProfile.ign} has requested an Admin Review for your challenge. The challenge timer is paused until an admin resolves it.`,
+    relatedEntity: 'Challenge',
+    relatedId: challenge._id
+  });
+
+  return challenge;
+};
+
+module.exports = { createChallenge, acceptChallenge, rejectChallenge, cancelChallenge, checkAndLazyExpire, requestAdminReview };
+

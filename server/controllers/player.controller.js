@@ -80,8 +80,13 @@ const getPlayerById = async (req, res, next) => {
       .sort({ createdAt: -1 }).limit(20);
 
     let rollingChallengesCount = 0;
+    let defenderPendingCount = 0;
     if (req.user) {
       const Challenge = require('../models/Challenge');
+      defenderPendingCount = await Challenge.countDocuments({
+        defenderId: profile._id,
+        status: 'PENDING'
+      });
       const challengerProfile = await PlayerProfile.findOne({ userId: req.user._id });
       if (challengerProfile) {
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -94,7 +99,7 @@ const getPlayerById = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount } });
+    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount, defenderPendingCount } });
   } catch (err) {
     next(err);
   }

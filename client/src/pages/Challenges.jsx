@@ -4,6 +4,7 @@ import ChallengeCard from '../components/challenge/ChallengeCard';
 import EmptyState from '../components/ui/EmptyState';
 import { motion } from 'framer-motion';
 import * as challengeService from '../services/challenge.service';
+import useAuth from '../hooks/useAuth';
 
 const FILTER_TABS = [
   { label: 'All', role: 'all' },
@@ -11,9 +12,10 @@ const FILTER_TABS = [
   { label: 'Outgoing', role: 'outgoing' },
 ];
 
-const STATUS_TABS = ['ALL', 'PENDING', 'PAYMENT_PENDING', 'MATCH_ACTIVE', 'COMPLETED', 'REJECTED', 'EXPIRED', 'CANCELLED'];
+const STATUS_TABS = ['ALL', 'PENDING', 'PAYMENT_PENDING', 'MATCH_ACTIVE', 'COMPLETED', 'REJECTED', 'EXPIRED', 'CANCELLED', 'ADMIN_REVIEW'];
 
 const Challenges = () => {
+  const { profile } = useAuth();
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('all');
@@ -45,11 +47,12 @@ const Challenges = () => {
     fetchChallenges();
   }, [fetchChallenges]);
 
-  const handleStatusUpdate = async (challengeId, action) => {
+  const handleStatusUpdate = async (challengeId, action, reason) => {
     try {
       if (action === 'accept') await challengeService.acceptChallenge(challengeId);
       if (action === 'reject') await challengeService.rejectChallenge(challengeId);
       if (action === 'cancel') await challengeService.cancelChallenge(challengeId);
+      if (action === 'admin-review') await challengeService.requestAdminReview(challengeId, reason);
       fetchChallenges();
     } catch (err) {
       alert(err.response?.data?.message || 'Action failed.');
@@ -142,19 +145,28 @@ const Challenges = () => {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {challenges.map((challenge, i) => (
-            <motion.div
-              key={challenge._id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <ChallengeCard
-                challenge={challenge}
-                onStatusUpdate={handleStatusUpdate}
-              />
-            </motion.div>
-          ))}
+          {challenges.map((challenge, i) => {
+            // Find oldest pending for the current user as defender
+            const myPendingChallenges = challenges.filter(c => c.status === 'PENDING' && c.defenderId?._id === profile?._id);
+            // Since they are sorted descending from backend (newest first), the last one in the filtered array is the oldest
+            const oldestPendingChallengeId = myPendingChallenges.length > 0 ? myPendingChallenges[myPendingChallenges.length - 1]._id : null;
+            const isOldestPending = challenge._id === oldestPendingChallengeId;
+
+            return (
+              <motion.div
+                key={challenge._id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <ChallengeCard
+                  challenge={challenge}
+                  onStatusUpdate={handleStatusUpdate}
+                  isOldestPending={isOldestPending}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
