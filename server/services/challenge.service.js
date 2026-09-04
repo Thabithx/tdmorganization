@@ -181,7 +181,7 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     );
   }
 
-  // Anti-Abuse: Maximum 3 challenge attempts between the exact same player pair within rolling 7 days
+  // Anti-Abuse: Maximum 2 challenge attempts to the same opponent within rolling 7 days
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const pairAttemptsCount = await Challenge.countDocuments({
     challengerId: challengerProfile._id,
@@ -190,9 +190,9 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     cancellationReason: { $nin: ['DEFENDER_CONFLICT_CANCELLED', 'PAYMENT_TIMEOUT'] }
   });
 
-  if (pairAttemptsCount >= 3) {
+  if (pairAttemptsCount >= 2) {
     throw Object.assign(
-      new Error("Maximum 3 challenge attempts to this opponent within a rolling 7-day period has been reached."),
+      new Error("Maximum 2 challenge attempts to this opponent within a rolling 7-day period has been reached."),
       { statusCode: 400 }
     );
   }
@@ -343,29 +343,6 @@ const acceptChallenge = async ({ challengeId, defenderUserId }) => {
   challenge.paymentDeadline = paymentDeadline;
   await challenge.save();
 
-  // Auto-cancel any OTHER pending challenges targeting defender or created by defender
-  const conflictingChallenges = await Challenge.find({
-    _id: { $ne: challenge._id },
-    $or: [{ defenderId: defenderProfile._id }, { challengerId: defenderProfile._id }],
-    status: 'PENDING'
-  }).populate('challengerId defenderId');
-
-  for (const conflict of conflictingChallenges) {
-    conflict.status = 'CANCELLED';
-    conflict.cancellationReason = 'DEFENDER_CONFLICT_CANCELLED';
-    await conflict.save();
-
-    if (conflict.challengerId?.userId) {
-      await Notification.create({
-        userId: conflict.challengerId.userId,
-        type: 'CHALLENGE_CANCELLED',
-        message: `Your challenge was automatically cancelled because ${defenderProfile.ign} accepted another challenge.`,
-        relatedEntity: 'Challenge',
-        relatedId: conflict._id
-      });
-    }
-  }
-
   // Notify challenger to pay within 24 hours
   await Notification.create({
     userId: challenge.challengerId.userId,
@@ -403,18 +380,18 @@ const rejectChallenge = async ({ challengeId, defenderUserId }) => {
     throw Object.assign(new Error(`Challenge cannot be rejected in ${challenge.status} state.`), { statusCode: 400 });
   }
 
-  // Pair decline limit check: Defender cannot decline the SAME challenger more than 2 times in 7 days
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  // Pair decline limit check: Defender cannot decline the SAME challenger more than 2 times in a rolling 14-day period
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const pairDeclineCount = await Challenge.countDocuments({
     challengerId: challenge.challengerId._id,
     defenderId: defenderProfile._id,
     status: { $in: ['REJECTED', 'EXPIRED'] },
-    createdAt: { $gte: sevenDaysAgo }
+    createdAt: { $gte: fourteenDaysAgo }
   });
 
   if (pairDeclineCount >= 2) {
     throw Object.assign(
-      new Error("You have already declined this specific challenger 2 times in the last 7 days. You must accept their challenge or request Admin Review."),
+      new Error("You have already declined this specific challenger 2 times in the last 14 days. You must accept their challenge or request Admin Review."),
       { statusCode: 400 }
     );
   }

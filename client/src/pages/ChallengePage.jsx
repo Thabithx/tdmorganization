@@ -116,13 +116,13 @@ const ChallengePage = () => {
     </div>
   );
 
-  if (rollingChallengesCount >= 3) return (
+  if (rollingChallengesCount >= 2) return (
     <div className="max-w-lg mx-auto py-16">
       <Card variant="default" className="p-8 text-center border-red-500/20">
         <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" />
         <h2 className="font-heading text-lg font-bold text-red-200 uppercase mb-2">CHALLENGE LIMIT REACHED</h2>
         <p className="text-secondary text-sm mb-6">
-          You have already challenged this player 3 times in the last 7 days.
+          You have already challenged this player 2 times in the last 7 days.
         </p>
         <Button variant="secondary" size="md" onClick={() => navigate(-1)}>GO BACK</Button>
       </Card>
