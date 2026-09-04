@@ -33,6 +33,7 @@ router.get('/challenges', getAdminChallenges);
 router.get('/challenges/:id', getAdminChallengeById);
 router.put('/challenges/:id/status', updateChallengeStatus);
 router.post('/challenges/:id/resolve-review', require('../controllers/admin.controller').resolveAdminReview);
+router.post('/challenges/:id/forfeit', require('../controllers/admin.controller').forfeitChallenge);
 
 router.get('/payments', getAdminPayments);
 router.post('/payments/:id/confirm', confirmPaymentManual);

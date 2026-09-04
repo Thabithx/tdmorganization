@@ -161,8 +161,11 @@ const handlePayhereWebhook = async (body) => {
         resultStatus: 'PENDING',
       });
 
-      // Move to MATCH_PENDING
+      // Move to MATCH_PENDING and set SLA deadlines
       challenge.status = 'MATCH_PENDING';
+      const now = new Date();
+      challenge.matchSchedulingDeadline = new Date(now.getTime() + 48 * 60 * 60 * 1000); // 48h
+      challenge.matchCompletionDeadline = new Date(now.getTime() + 72 * 60 * 60 * 1000); // 72h
       await challenge.save();
 
       // Notify both players
@@ -237,6 +240,9 @@ const adminConfirmPayment = async (paymentId, adminUser) => {
     }
 
     challenge.status = 'MATCH_PENDING';
+    const now = new Date();
+    challenge.matchSchedulingDeadline = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    challenge.matchCompletionDeadline = new Date(now.getTime() + 72 * 60 * 60 * 1000);
     await challenge.save();
   }
 

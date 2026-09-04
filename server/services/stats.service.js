@@ -135,4 +135,53 @@ const getPlayerMatchHistory = async (playerId, filter = 'ALL') => {
   return enriched;
 };
 
-module.exports = { getPlayerStats, getPlayerMatchHistory };
+const getDefenderReliability = async (playerId) => {
+  const Challenge = require('../models/Challenge');
+  
+  const receivedChallenges = await Challenge.find({
+    defenderId: playerId,
+    cancellationReason: { $nin: ['PLAYER_CANCELLED', 'SYSTEM_CANCELLED', 'ADMIN_REVIEW_APPROVED'] }
+  });
+
+  const totalValid = receivedChallenges.length;
+  if (totalValid === 0) return { score: 100, label: 'No Data' };
+
+  let reliableCount = 0;
+  for (const c of receivedChallenges) {
+    if (['ACCEPTED', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING', 'COMPLETED', 'DISPUTED'].includes(c.status)) {
+      reliableCount++;
+    } else if (c.status === 'CANCELLED' && c.cancellationReason === 'PAYMENT_TIMEOUT') {
+      reliableCount++; // Defender accepted, challenger failed to pay. Defender is reliable.
+    } else if (c.status === 'CANCELLED' && c.cancellationReason === 'DEFENDER_CONFLICT_CANCELLED') {
+       // Ignore these entirely as they aren't failures of reliability (system cancelled them). Wait, these should not be in the denominator either!
+       // Let's filter them out completely.
+    }
+  }
+
+  // Refine totalValid: remove DEFENDER_CONFLICT_CANCELLED
+  const actualChallenges = receivedChallenges.filter(c => c.cancellationReason !== 'DEFENDER_CONFLICT_CANCELLED');
+  const actualTotal = actualChallenges.length;
+  
+  if (actualTotal === 0) return { score: 100, label: 'No Data' };
+
+  reliableCount = 0;
+  for (const c of actualChallenges) {
+    if (['ACCEPTED', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'MATCH_PENDING', 'MATCH_ACTIVE', 'RESULT_PENDING', 'COMPLETED', 'DISPUTED'].includes(c.status)) {
+      reliableCount++;
+    } else if (c.status === 'CANCELLED' && c.cancellationReason === 'PAYMENT_TIMEOUT') {
+      reliableCount++; 
+    }
+  }
+
+  const score = Math.round((reliableCount / actualTotal) * 100);
+  
+  let label = '';
+  if (score >= 90) label = 'Highly Reliable';
+  else if (score >= 70) label = 'Reliable';
+  else if (score >= 50) label = 'Inconsistent';
+  else label = 'Unreliable';
+
+  return { score, label, total: actualTotal, reliableCount };
+};
+
+module.exports = { getPlayerStats, getPlayerMatchHistory, getDefenderReliability };

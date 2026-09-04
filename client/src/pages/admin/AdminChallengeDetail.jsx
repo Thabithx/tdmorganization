@@ -140,6 +140,25 @@ export default function AdminChallengeDetail() {
               <XCircle className="w-3.5 h-3.5" /> Cancel Challenge
             </Button>
           )}
+          {challenge.status === 'DISPUTED' && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={async () => {
+                if (window.confirm('Forfeit challenge (Challenger loses)?')) {
+                  try {
+                    await adminService.forfeitChallenge(id);
+                    fetchData();
+                  } catch (err) {
+                    alert(err.response?.data?.message || 'Failed to forfeit.');
+                  }
+                }
+              }}
+              className="flex items-center gap-1.5"
+            >
+              <AlertOctagon className="w-3.5 h-3.5" /> Forfeit Challenger
+            </Button>
+          )}
         </div>
       </div>
 

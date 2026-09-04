@@ -19,7 +19,12 @@ const playerProfileSchema = new mongoose.Schema({
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
-  }]
+  }],
+  abandonmentTimeouts: { type: Number, default: 0 },
+  abandonmentCooldownUntil: { type: Date },
+  abandonmentFlaggedForReview: { type: Boolean, default: false },
+  monthlyReviewsUsed: { type: Number, default: 0 },
+  reviewMonthTracker: { type: String, default: '' } // YYYY-MM
 }, { timestamps: true });
 
 playerProfileSchema.index({ ign: 'text' });

@@ -5,12 +5,12 @@ export const formatAmount = (num) => {
 
 export const getNetPrize = (amount) => {
   if (!amount) return 0;
-  return Math.floor(parseFloat(amount) * 0.80);
+  return Math.floor(parseFloat(amount) * 0.90);
 };
 
 export const getPlatformFee = (amount) => {
   if (!amount) return 0;
-  return Math.floor(parseFloat(amount) * 0.20);
+  return Math.floor(parseFloat(amount) * 0.10);
 };
 
 export const formatDate = (dateString) => {

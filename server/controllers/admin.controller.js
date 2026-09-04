@@ -867,6 +867,66 @@ const resolveAdminReview = async (req, res, next) => {
   }
 };
 
+const forfeitChallenge = async (req, res, next) => {
+  const mongoose = require('mongoose');
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { challengeId } = req.params;
+    const challenge = await Challenge.findById(challengeId).session(session);
+    if (!challenge) throw Object.assign(new Error('Challenge not found'), { statusCode: 404 });
+    if (challenge.status !== 'DISPUTED') {
+      throw Object.assign(new Error('Challenge must be DISPUTED (SLA breached) to forfeit.'), { statusCode: 400 });
+    }
+
+    const match = await Match.findOne({ challengeId: challenge._id }).session(session);
+    if (!match) throw Object.assign(new Error('Match not found for this challenge.'), { statusCode: 404 });
+
+    const rankingService = require('../services/ranking.service');
+    const AdminAuditLog = require('../models/AdminAuditLog');
+
+    // Challenger forfeited, so challenger lost
+    const rankingHistoryEntries = await rankingService.applyMatchResult(
+      challenge._id,
+      'CHALLENGER_LOST',
+      req.user._id,
+      session
+    );
+
+    match.winnerId = match.defenderId;
+    match.loserId = match.challengerId;
+    match.result = 'CHALLENGER_LOST';
+    match.resultStatus = 'COMPLETED';
+    match.matchCompletedAt = new Date();
+    match.verifiedBy = req.user._id;
+    match.adminNotes = (match.adminNotes || '') + '\n[FORFEIT: Challenger failed to meet match SLA]';
+    await match.save({ session });
+
+    challenge.status = 'COMPLETED';
+    await challenge.save({ session });
+
+    if (rankingHistoryEntries.length > 0) {
+      await RankingHistory.insertMany(rankingHistoryEntries, { session });
+    }
+
+    await AdminAuditLog.create([{
+      adminId: req.user._id,
+      action: 'MATCH_FORFEITED',
+      targetEntity: 'Match',
+      targetId: match._id,
+      reason: 'SLA Breach',
+    }], { session });
+
+    await session.commitTransaction();
+    res.json({ success: true, message: 'Match forfeited successfully.' });
+  } catch (err) {
+    await session.abortTransaction();
+    next(err);
+  } finally {
+    session.endSession();
+  }
+};
+
 module.exports = {
   getDashboard, getAdminPlayers, updateAdminPlayer, suspendPlayer, restorePlayer,
   getAdminRankings, manualRankingUpdate,
@@ -874,5 +934,5 @@ module.exports = {
   getAdminPayments, confirmPaymentManual,
   getAdminMatches, getAdminMatchById, addMatchEvidence, updateMatchStatus, confirmMatchResult,
   getAuditLogs, getRankingHistory,
-  globalSearch, getAdminPlayerById, addPlayerNote, deletePlayerNote, getAdminChallengeById, correctMatchResult, resolveAdminReview,
+  globalSearch, getAdminPlayerById, addPlayerNote, deletePlayerNote, getAdminChallengeById, correctMatchResult, resolveAdminReview, forfeitChallenge
 };

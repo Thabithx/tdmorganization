@@ -261,7 +261,20 @@ const PlayerProfile = () => {
                       ) : '—'}
                     </span>
                   </div>
-                  <div className="flex justify-between py-2.5 border-b border-frost-50/5 sm:col-span-2">
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
+                    <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Reliability</span>
+                    <div className="flex items-center space-x-1">
+                      <span className={`w-2 h-2 rounded-full ${
+                        data.reliability?.score >= 90 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
+                        data.reliability?.score >= 70 ? 'bg-amber-400' :
+                        data.reliability?.score >= 50 ? 'bg-orange-400' : 'bg-red-500'
+                      }`} />
+                      <span className="font-heading font-bold text-[#F4FBFF] text-xs">
+                        {data.reliability?.score}% <span className="text-secondary/60">({data.reliability?.label})</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-frost-50/5">
                     <span className="text-secondary text-xs uppercase tracking-wider font-semibold">Member Since</span>
                     <span className="font-heading font-bold text-[#F4FBFF] text-xs">{formatDate(profile.createdAt)}</span>
                   </div>

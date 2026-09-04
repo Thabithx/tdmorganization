@@ -99,7 +99,9 @@ const getPlayerById = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount, defenderPendingCount } });
+    const reliability = await statsService.getDefenderReliability(profile._id);
+
+    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount, defenderPendingCount, reliability } });
   } catch (err) {
     next(err);
   }

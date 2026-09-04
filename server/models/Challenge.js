@@ -30,6 +30,9 @@ const challengeSchema = new mongoose.Schema({
   },
   adminReviewRequestedAt: { type: Date },
   adminReviewReason: { type: String, default: '' },
+  isOverReviewAllowance: { type: Boolean, default: false },
+  matchSchedulingDeadline: { type: Date },
+  matchCompletionDeadline: { type: Date },
   notes: { type: String, default: '' },
 }, { timestamps: true });
 

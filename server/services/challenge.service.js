@@ -15,8 +15,8 @@ const checkAndLazyExpire = async (challenge) => {
 
   const now = new Date();
 
-  // 1. Pending 72-hour expiration check
-  if (challenge.status === 'PENDING') {
+  // 1. Pending 72-hour expiration check (also applies to over-allowance ADMIN_REVIEW)
+  if (challenge.status === 'PENDING' || (challenge.status === 'ADMIN_REVIEW' && challenge.isOverReviewAllowance)) {
     const seventyTwoHoursAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
     if (challenge.createdAt < seventyTwoHoursAgo) {
       challenge.status = 'EXPIRED';
@@ -101,7 +101,7 @@ const checkAndLazyExpire = async (challenge) => {
     }
   }
 
-  // 2. PAYMENT_PENDING 24-hour timeout check
+  // 2. PAYMENT_PENDING 24-hour timeout check (Abandonment tracking)
   if (challenge.status === 'PAYMENT_PENDING') {
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const deadlinePassed = challenge.paymentDeadline ? challenge.paymentDeadline < now : (challenge.acceptedAt && challenge.acceptedAt < twentyFourHoursAgo);
@@ -111,15 +111,60 @@ const checkAndLazyExpire = async (challenge) => {
       await challenge.save();
 
       const populated = await Challenge.findById(challenge._id).populate('challengerId defenderId');
-      if (populated?.challengerId?.userId) {
-        await Notification.create({
-          userId: populated.challengerId.userId,
-          type: 'CHALLENGE_CANCELLED',
-          message: `Payment deadline (24 hours) for your challenge against ${populated.defenderId?.ign || 'defender'} expired. The challenge is cancelled.`,
-          relatedEntity: 'Challenge',
-          relatedId: challenge._id
+      
+      // Update abandonment score
+      if (populated?.challengerId) {
+        const challenger = populated.challengerId;
+        
+        // Reset counter if it's been > 30 days since the first timeout? We can just keep a simple rolling logic.
+        // Actually, we can just recount timeouts in the last 30 days.
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const timeouts = await Challenge.countDocuments({
+          challengerId: challenger._id,
+          cancellationReason: 'PAYMENT_TIMEOUT',
+          updatedAt: { $gte: thirtyDaysAgo }
         });
+        
+        challenger.abandonmentTimeouts = timeouts;
+        
+        let punishmentMsg = '';
+        if (timeouts === 1) {
+          punishmentMsg = 'Warning: Further payment timeouts will result in a challenge cooldown.';
+        } else if (timeouts === 2) {
+          challenger.abandonmentCooldownUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h
+          punishmentMsg = 'You have been given a 24-hour cooldown from sending challenges.';
+        } else if (timeouts === 3) {
+          challenger.abandonmentCooldownUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7d
+          punishmentMsg = 'You have been given a 7-day cooldown from sending challenges.';
+        } else if (timeouts >= 4) {
+          challenger.abandonmentFlaggedForReview = true;
+          punishmentMsg = 'Your account has been flagged for manual admin review due to repeated payment timeouts.';
+          
+          const User = require('../models/User');
+          const admins = await User.find({ role: 'ADMIN' });
+          for (const admin of admins) {
+            await Notification.create({
+              userId: admin._id,
+              type: 'PLAYER_FLAGGED',
+              message: `Player ${challenger.ign} has been flagged for manual review due to ${timeouts} payment timeouts.`,
+              relatedEntity: 'PlayerProfile',
+              relatedId: challenger._id
+            });
+          }
+        }
+        await challenger.save();
+
+        if (challenger.userId) {
+          await Notification.create({
+            userId: challenger.userId,
+            type: 'CHALLENGE_CANCELLED',
+            message: `Payment deadline expired. Challenge cancelled. ${punishmentMsg}`,
+            relatedEntity: 'Challenge',
+            relatedId: challenge._id
+          });
+        }
       }
+
       if (populated?.defenderId?.userId) {
         await Notification.create({
           userId: populated.defenderId.userId,
@@ -130,6 +175,42 @@ const checkAndLazyExpire = async (challenge) => {
         });
       }
       return challenge;
+    }
+  }
+
+  // 3. Match SLA Checks
+  if (['PAYMENT_CONFIRMED', 'MATCH_PENDING'].includes(challenge.status) && challenge.matchSchedulingDeadline && now > challenge.matchSchedulingDeadline) {
+    challenge.status = 'DISPUTED';
+    challenge.notes = (challenge.notes || '') + '\nSLA BREACH: Match scheduling deadline passed. Admin review required.';
+    await challenge.save();
+    
+    // Notify Admin
+    const User = require('../models/User');
+    const admins = await User.find({ role: 'ADMIN' });
+    for (const admin of admins) {
+      await Notification.create({
+        userId: admin._id,
+        type: 'SLA_BREACH',
+        message: `SLA Breach: Match ${challenge._id} missed scheduling deadline (48h).`,
+        relatedEntity: 'Challenge',
+        relatedId: challenge._id
+      });
+    }
+  } else if (['MATCH_ACTIVE'].includes(challenge.status) && challenge.matchCompletionDeadline && now > challenge.matchCompletionDeadline) {
+    challenge.status = 'DISPUTED';
+    challenge.notes = (challenge.notes || '') + '\nSLA BREACH: Match completion deadline passed. Admin review required.';
+    await challenge.save();
+    
+    const User = require('../models/User');
+    const admins = await User.find({ role: 'ADMIN' });
+    for (const admin of admins) {
+      await Notification.create({
+        userId: admin._id,
+        type: 'SLA_BREACH',
+        message: `SLA Breach: Match ${challenge._id} missed completion deadline (72h).`,
+        relatedEntity: 'Challenge',
+        relatedId: challenge._id
+      });
     }
   }
 
@@ -145,6 +226,10 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   if (!challengerProfile) throw Object.assign(new Error('Your player profile not found.'), { statusCode: 404 });
   if (challengerProfile.status === 'SUSPENDED') {
     throw Object.assign(new Error('Suspended accounts cannot create challenges.'), { statusCode: 403 });
+  }
+  
+  if (challengerProfile.abandonmentCooldownUntil && challengerProfile.abandonmentCooldownUntil > new Date()) {
+    throw Object.assign(new Error(`You are on a challenge cooldown until ${challengerProfile.abandonmentCooldownUntil.toLocaleString()} due to repeated payment timeouts.`), { statusCode: 403 });
   }
 
   // Load defender profile
@@ -498,9 +583,32 @@ const requestAdminReview = async ({ challengeId, defenderUserId, reason }) => {
     throw Object.assign(new Error('A reason is required to request an Admin Review.'), { statusCode: 400 });
   }
 
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  
+  if (defenderProfile.reviewMonthTracker !== currentMonth) {
+    defenderProfile.reviewMonthTracker = currentMonth;
+    defenderProfile.monthlyReviewsUsed = 0;
+  }
+
+  let isOverAllowance = false;
+  if (defenderProfile.monthlyReviewsUsed >= 1) {
+    isOverAllowance = true;
+  }
+
+  defenderProfile.monthlyReviewsUsed += 1;
+  await defenderProfile.save();
+
   challenge.status = 'ADMIN_REVIEW';
-  challenge.adminReviewRequestedAt = new Date();
+  challenge.adminReviewRequestedAt = now;
   challenge.adminReviewReason = reason;
+  challenge.isOverReviewAllowance = isOverAllowance;
+  
+  // If over allowance, we add a note for the admin so they know the timer is NOT paused.
+  if (isOverAllowance) {
+    challenge.notes = (challenge.notes || '') + '\n[WARNING: Player over monthly review allowance. Timer is NOT paused.]';
+  }
+  
   await challenge.save();
 
   // Notify Admins
