@@ -9,11 +9,15 @@ const generateToken = (id) =>
 
 const sendResetEmail = async (toEmail, resetUrl) => {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.GMAIL_USER,
-      pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''), // strip any spaces
+      pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''),
     },
+    connectionTimeout: 10000, // 10 seconds to prevent 502 Bad Gateway
+    socketTimeout: 10000,
   });
 
   await transporter.sendMail({
