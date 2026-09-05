@@ -165,6 +165,31 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
+const testEmail = async (req, res) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''),
+    },
+    connectionTimeout: 5000,
+  });
+
+  try {
+    await transporter.verify();
+    res.json({ success: true, message: 'SMTP Connection Successful! Credentials are correct.' });
+  } catch (error) {
+    res.json({ 
+      success: false, 
+      message: 'SMTP Connection Failed', 
+      errorDetails: error.message,
+      currentUserConfigured: process.env.GMAIL_USER
+    });
+  }
+};
+
 const resetPassword = async (req, res, next) => {
   try {
     const { token } = req.params;
@@ -197,4 +222,4 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, forgotPassword, resetPassword };
+module.exports = { register, login, getMe, forgotPassword, resetPassword, testEmail };
