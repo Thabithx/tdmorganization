@@ -15,6 +15,8 @@ import Players from './pages/Players';
 import PlayerProfile from './pages/PlayerProfile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ChallengeRules from './pages/ChallengeRules';
 import TempSignup from './pages/TempSignup';
 
@@ -114,6 +116,8 @@ function App() {
         <Route path="/players/:id" element={<MainLayoutWrapper><PlayerProfile /></MainLayoutWrapper>} />
         <Route path="/login" element={<MainLayoutWrapper><Login /></MainLayoutWrapper>} />
         <Route path="/register" element={<MainLayoutWrapper><Register /></MainLayoutWrapper>} />
+        <Route path="/forgot-password" element={<MainLayoutWrapper><ForgotPassword /></MainLayoutWrapper>} />
+        <Route path="/reset-password/:token" element={<MainLayoutWrapper><ResetPassword /></MainLayoutWrapper>} />
         <Route path="/challenge-rules" element={<MainLayoutWrapper><ChallengeRules /></MainLayoutWrapper>} />
 
         {/* Protected routes */}

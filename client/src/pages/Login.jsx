@@ -64,7 +64,10 @@ const Login = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">Password</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">Password</label>
+                <Link to="/forgot-password" className="text-xs text-secondary hover:text-frost-50 transition-colors">Forgot password?</Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}

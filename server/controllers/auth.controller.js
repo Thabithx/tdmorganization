@@ -1,9 +1,38 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const PlayerProfile = require('../models/PlayerProfile');
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+
+const sendResetEmail = async (toEmail, resetUrl) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"FROST TDM" <${process.env.GMAIL_USER}>`,
+    to: toEmail,
+    subject: 'FROST — Reset Your Password',
+    html: `
+      <div style="background:#05070D;color:#F4FBFF;font-family:sans-serif;padding:40px;border-radius:12px;max-width:480px;margin:auto">
+        <h2 style="color:#8BE3FF;letter-spacing:2px;font-size:20px;margin-bottom:8px">FROST TDM</h2>
+        <p style="color:#8BA8B8;font-size:13px;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px">Password Reset Request</p>
+        <p style="font-size:14px;color:#C8DDE8;line-height:1.6">You requested to reset your password. Click the button below within <strong style="color:#8BE3FF">1 hour</strong> before this link expires.</p>
+        <a href="${resetUrl}" style="display:inline-block;margin:24px 0;background:#8BE3FF;color:#05070D;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;letter-spacing:1px;text-transform:uppercase">Reset Password</a>
+        <p style="font-size:12px;color:#4A5D6E;margin-top:24px">If you didn't request this, ignore this email. Your password will not change.</p>
+        <hr style="border:none;border-top:1px solid #1A2B35;margin:24px 0"/>
+        <p style="font-size:11px;color:#2A3D4E">This link expires in 1 hour and can only be used once.</p>
+      </div>
+    `,
+  });
+};
 
 const register = async (req, res, next) => {
   try {
@@ -92,4 +121,75 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe };
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    // Always return success — don't reveal whether email exists
+    if (!user) {
+      return res.json({ success: true, message: 'If an account with that email exists, a reset link has been sent.' });
+    }
+
+    // Generate a secure random token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save({ validateBeforeSave: false });
+
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${clientUrl}/reset-password/${rawToken}`;
+
+    try {
+      await sendResetEmail(user.email, resetUrl);
+    } catch (emailErr) {
+      // Rollback token if email fails
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ success: false, message: 'Failed to send reset email. Please try again later.' });
+    }
+
+    res.json({ success: true, message: 'If an account with that email exists, a reset link has been sent.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+
+    // Hash the incoming raw token to compare against stored hashed token
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
+    }
+
+    user.passwordHash = password; // pre-save hook will hash it
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, getMe, forgotPassword, resetPassword };
