@@ -12,7 +12,7 @@ const sendResetEmail = async (toEmail, resetUrl) => {
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASS,
+      pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''), // strip any spaces
     },
   });
 
@@ -147,6 +147,7 @@ const forgotPassword = async (req, res, next) => {
     try {
       await sendResetEmail(user.email, resetUrl);
     } catch (emailErr) {
+      console.error('SMTP Email Error:', emailErr); // Added for Render logs
       // Rollback token if email fails
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
