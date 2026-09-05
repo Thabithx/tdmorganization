@@ -15,13 +15,18 @@ const generateToken = (id) =>
 const sendResetEmail = async (toEmail, resetUrl) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false,
+    requireTLS: true,
     auth: {
       user: process.env.GMAIL_USER,
       pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''),
     },
-    connectionTimeout: 10000, // 10 seconds to prevent 502 Bad Gateway
+    tls: {
+      rejectUnauthorized: true,
+    },
+    family: 4, // Force IPv4
+    connectionTimeout: 10000,
     socketTimeout: 10000,
   });
 
@@ -173,12 +178,17 @@ const forgotPassword = async (req, res, next) => {
 const testEmail = async (req, res) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false,
+    requireTLS: true,
     auth: {
       user: process.env.GMAIL_USER,
       pass: (process.env.GMAIL_APP_PASS || '').replace(/\s/g, ''),
     },
+    tls: {
+      rejectUnauthorized: true,
+    },
+    family: 4, // Force IPv4
     connectionTimeout: 5000,
   });
 
