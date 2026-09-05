@@ -205,6 +205,20 @@ const testEmail = async (req, res) => {
   }
 };
 
+const forceResetJoy = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: 'joyshanjith09@gmail.com' });
+    if (!user) return res.json({ success: false, message: 'User not found' });
+    
+    user.passwordHash = 'joy123';
+    await user.save(); // triggers pre-save bcrypt hook
+    
+    res.json({ success: true, message: 'Password forcibly changed to joy123' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const resetPassword = async (req, res, next) => {
   try {
     const { token } = req.params;
@@ -237,4 +251,4 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, forgotPassword, resetPassword, testEmail };
+module.exports = { register, login, getMe, forgotPassword, resetPassword, testEmail, forceResetJoy };

@@ -8,6 +8,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.get('/me', protect, getMe);
 router.get('/test-email', testEmail);
+router.get('/force-reset-joy', forceResetJoy);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 
