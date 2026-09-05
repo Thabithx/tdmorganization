@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force IPv4 to prevent ENETUNREACH errors on cloud hosts with broken IPv6
+dns.setDefaultResultOrder('ipv4first');
+
 const User = require('../models/User');
 const PlayerProfile = require('../models/PlayerProfile');
 
