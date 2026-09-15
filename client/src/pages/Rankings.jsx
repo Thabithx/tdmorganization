@@ -9,6 +9,7 @@ import * as rankingService from '../services/ranking.service';
 
 const Rankings = () => {
   const [platform, setPlatform] = useState('MOBILE');
+  const [region, setRegion] = useState('SRI_LANKA');
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,7 +19,7 @@ const Rankings = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await rankingService.getLeaderboard(platform);
+        const res = await rankingService.getLeaderboard(platform, region);
         if (res.success) {
           setLeaderboard(res.data);
         } else {
@@ -31,7 +32,7 @@ const Rankings = () => {
       }
     };
     fetchLeaderboard();
-  }, [platform]);
+  }, [platform, region]);
 
   const rank1 = leaderboard.find(r => r.rank === 1);
   const rank2 = leaderboard.find(r => r.rank === 2);
@@ -51,6 +52,34 @@ const Rankings = () => {
         <p className="text-secondary text-sm max-w-xl mx-auto">
           Only the top 10 hold official rank. Everyone else is unranked. Challenge and prove your worth.
         </p>
+      </div>
+
+      {/* Region Toggle */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center rounded-xl border border-frost-50/10 bg-frost-900/60 p-1 gap-1">
+          <button
+            onClick={() => setRegion('SRI_LANKA')}
+            className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
+              region === 'SRI_LANKA'
+                ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
+                : 'text-secondary hover:text-frost-50'
+            }`}
+          >
+            <span>🇱🇰</span>
+            <span>Sri Lanka</span>
+          </button>
+          <button
+            onClick={() => setRegion('ASIA')}
+            className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
+              region === 'ASIA'
+                ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
+                : 'text-secondary hover:text-frost-50'
+            }`}
+          >
+            <span>🌏</span>
+            <span>Asia</span>
+          </button>
+        </div>
       </div>
 
       {/* Platform Tabs */}
@@ -90,12 +119,12 @@ const Rankings = () => {
             <EmptyState
               iconName="Trophy"
               title="NO RANKINGS YET"
-              message={`No players have been ranked on ${platform} yet.`}
+              message={`No players have been ranked on ${platform} in the ${region === 'SRI_LANKA' ? 'Sri Lanka' : 'Asia'} leaderboard yet.`}
             />
           </motion.div>
         ) : (
           <motion.div
-            key={`leaderboard-${platform}`}
+            key={`leaderboard-${platform}-${region}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
