@@ -11,6 +11,7 @@ const PLATFORMS = ['MOBILE', 'IPAD', 'EMULATOR'];
 
 export default function AdminRankings() {
   const [platform, setPlatform] = useState('MOBILE');
+  const [region, setRegion] = useState('SRI_LANKA');
   const [rankings, setRankings] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,8 +37,8 @@ export default function AdminRankings() {
     setLoading(true);
     try {
       const [rankRes, playerRes] = await Promise.all([
-        adminService.getAdminRankings({ platform }),
-        adminService.getAdminPlayers({ platform })
+        adminService.getAdminRankings({ platform, region }),
+        adminService.getAdminPlayers({ platform, region })
       ]);
       if (rankRes.success) setRankings(rankRes.data);
       if (playerRes.success) setAllPlayers(playerRes.data);
@@ -48,7 +49,7 @@ export default function AdminRankings() {
     }
   };
 
-  useEffect(() => { fetchRankings(); }, [platform]);
+  useEffect(() => { fetchRankings(); }, [platform, region]);
 
   // Execute Ranking Adjustment
   const executeAdjustment = async (payload) => {
@@ -57,6 +58,7 @@ export default function AdminRankings() {
     try {
       await adminService.manualRankingUpdate({
         platform,
+        region,
         ...payload
       });
       setConfirmModal({ open: false, action: null, payload: null, title: '', message: '' });
@@ -172,6 +174,7 @@ export default function AdminRankings() {
     try {
       await adminService.manualRankingUpdate({
         platform,
+        region,
         action: 'ADD_TO_RANK',
         playerId: selectedPlayerId,
         targetRank: addModal.targetRank,
@@ -218,21 +221,52 @@ export default function AdminRankings() {
         </Button>
       </div>
 
-      {/* Platform Selector Tabs */}
-      <div className="flex space-x-2">
-        {PLATFORMS.map(p => (
+      {/* Region & Platform Selector Tabs */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0B101A] p-4 rounded-xl border border-frost-50/10">
+        {/* Region Tabs */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest mr-1">Region:</span>
           <button
-            key={p}
-            onClick={() => setPlatform(p)}
-            className={`px-5 py-2.5 rounded-xl text-xs font-heading font-bold uppercase tracking-wider border transition-all ${
-              platform === p
-                ? 'bg-[#8BE3FF]/15 border-[#8BE3FF]/30 text-[#8BE3FF] shadow-[0_0_15px_rgba(139,227,255,0.1)]'
+            onClick={() => setRegion('SRI_LANKA')}
+            className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold uppercase tracking-wider border transition-all ${
+              region === 'SRI_LANKA'
+                ? 'bg-frost-50/15 border-frost-50/40 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
                 : 'border-frost-50/5 text-[#4A5D6E] hover:border-frost-50/15 hover:text-[#F4FBFF]'
             }`}
           >
-            {p} Leaderboard
+            <span>🇱🇰</span>
+            <span>Sri Lanka</span>
           </button>
-        ))}
+          <button
+            onClick={() => setRegion('ASIA')}
+            className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold uppercase tracking-wider border transition-all ${
+              region === 'ASIA'
+                ? 'bg-frost-50/15 border-frost-50/40 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
+                : 'border-frost-50/5 text-[#4A5D6E] hover:border-frost-50/15 hover:text-[#F4FBFF]'
+            }`}
+          >
+            <span>🌏</span>
+            <span>Asia</span>
+          </button>
+        </div>
+
+        {/* Platform Tabs */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest mr-1">Platform:</span>
+          {PLATFORMS.map(p => (
+            <button
+              key={p}
+              onClick={() => setPlatform(p)}
+              className={`px-4 py-2 rounded-lg text-xs font-heading font-bold uppercase tracking-wider border transition-all ${
+                platform === p
+                  ? 'bg-[#8BE3FF]/15 border-[#8BE3FF]/30 text-[#8BE3FF] shadow-[0_0_15px_rgba(139,227,255,0.1)]'
+                  : 'border-frost-50/5 text-[#4A5D6E] hover:border-frost-50/15 hover:text-[#F4FBFF]'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Rankings List with Drag and Drop */}

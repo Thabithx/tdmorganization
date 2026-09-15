@@ -13,6 +13,7 @@ const AdminPlayers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [platform, setPlatform] = useState('ALL');
+  const [regionFilter, setRegionFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [confirmDialog, setConfirmDialog] = useState({ open: false, action: null, player: null });
   const [actionLoading, setActionLoading] = useState(false);
@@ -23,6 +24,7 @@ const AdminPlayers = () => {
       const params = {};
       if (search) params.search = search;
       if (platform !== 'ALL') params.platform = platform;
+      if (regionFilter !== 'ALL') params.region = regionFilter;
       if (statusFilter !== 'ALL') params.status = statusFilter;
       const res = await adminService.getAdminPlayers(params);
       if (res.success) setPlayers(res.data);
@@ -36,7 +38,7 @@ const AdminPlayers = () => {
   useEffect(() => {
     const t = setTimeout(fetchPlayers, 300);
     return () => clearTimeout(t);
-  }, [search, platform, statusFilter]);
+  }, [search, platform, regionFilter, statusFilter]);
 
   const handleSuspend = async () => {
     setActionLoading(true);
@@ -95,6 +97,23 @@ const AdminPlayers = () => {
           ))}
         </div>
         <div className="flex space-x-2">
+          {[
+            { id: 'ALL', label: 'All Regions' },
+            { id: 'SRI_LANKA', label: '🇱🇰 Sri Lanka' },
+            { id: 'ASIA', label: '🌏 Asia' }
+          ].map(r => (
+            <button
+              key={r.id}
+              onClick={() => setRegionFilter(r.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-heading font-semibold uppercase border transition-all ${
+                regionFilter === r.id ? 'bg-frost-50/10 border-frost-50/30 text-frost-100' : 'border-frost-50/5 text-secondary hover:border-frost-50/15'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex space-x-2">
           {['ALL', 'ACTIVE', 'SUSPENDED'].map(s => (
             <button
               key={s}
@@ -118,6 +137,7 @@ const AdminPlayers = () => {
                 <th className="px-4 py-3 text-left">Player</th>
                 <th className="px-4 py-3 text-left">Rank</th>
                 <th className="px-4 py-3 text-left">Platform</th>
+                <th className="px-4 py-3 text-left">Region</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
@@ -126,14 +146,14 @@ const AdminPlayers = () => {
               {loading ? (
                 [...Array(6)].map((_, i) => (
                   <tr key={i}>
-                    <td colSpan={5} className="px-4 py-3">
+                    <td colSpan={6} className="px-4 py-3">
                       <div className="h-8 bg-frost-800/40 rounded animate-pulse" />
                     </td>
                   </tr>
                 ))
               ) : players.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-secondary text-sm">
+                  <td colSpan={6} className="px-4 py-10 text-center text-secondary text-sm">
                     No players found.
                   </td>
                 </tr>
@@ -141,16 +161,22 @@ const AdminPlayers = () => {
                 players.map(player => (
                   <tr key={player._id} className="hover:bg-frost-50/2 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="flex items-center space-x-3">
+                      <a href={`/admin/players/${player._id}`} className="flex items-center space-x-3 group">
                         <PlayerAvatar profile={player} size="sm" />
                         <div>
-                          <p className="font-heading font-bold text-[#F4FBFF] uppercase text-sm">{player.ign}</p>
+                          <p className="font-heading font-bold text-[#F4FBFF] group-hover:text-[#8BE3FF] uppercase text-sm transition-colors">{player.ign}</p>
                           <p className="text-secondary text-xs">{player.pubgUid}</p>
                         </div>
-                      </div>
+                      </a>
                     </td>
                     <td className="px-4 py-3"><RankBadge rank={player.currentRank} size="sm" /></td>
                     <td className="px-4 py-3"><PlatformBadge platform={player.platform} /></td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded border border-frost-50/10 bg-frost-800/40 text-secondary text-xs font-semibold uppercase">
+                        <span>{player.region === 'SRI_LANKA' ? '🇱🇰' : '🌏'}</span>
+                        <span>{player.region === 'SRI_LANKA' ? 'SL' : 'Asia'}</span>
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-heading font-semibold uppercase ${player.status === 'ACTIVE' ? 'text-emerald-400' : 'text-red-400'}`}>
                         {player.status}

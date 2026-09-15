@@ -66,7 +66,13 @@ export default function AdminPlayerDetail() {
       const res = await adminService.getAdminPlayerById(id);
       if (res.success) {
         setData(res.data);
-        setEditForm({ ign: res.data.profile.ign, bio: res.data.profile.bio || '' });
+        setEditForm({
+          ign: res.data.profile.ign || '',
+          platform: res.data.profile.platform || 'MOBILE',
+          region: res.data.profile.region || 'SRI_LANKA',
+          bio: res.data.profile.bio || '',
+          reason: ''
+        });
       } else {
         setError('Player not found.');
       }
@@ -137,7 +143,13 @@ export default function AdminPlayerDetail() {
     setEditLoading(true);
     setEditError('');
     try {
-      await adminService.updateAdminPlayer(id, { bio: editForm.bio });
+      await adminService.updateAdminPlayer(id, {
+        ign: editForm.ign,
+        platform: editForm.platform,
+        region: editForm.region,
+        bio: editForm.bio,
+        reason: editForm.reason || 'Admin modification'
+      });
       setEditModal(false);
       fetchData();
     } catch (err) {
@@ -215,6 +227,10 @@ export default function AdminPlayerDetail() {
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="font-heading text-xl font-black text-[#F4FBFF] uppercase tracking-wider">{profile.ign}</h1>
               <PlatformBadge platform={profile.platform} />
+              <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded border border-frost-50/10 bg-frost-800/40 text-secondary text-xs font-semibold uppercase tracking-wider">
+                <span>{profile.region === 'SRI_LANKA' ? '🇱🇰' : '🌏'}</span>
+                <span>{profile.region === 'SRI_LANKA' ? 'Sri Lanka' : 'Asia'}</span>
+              </span>
               <span className={`text-xs font-heading font-semibold uppercase px-2 py-0.5 rounded border ${
                 profile.status === 'ACTIVE' ? 'text-emerald-300 border-emerald-500/20 bg-emerald-950/30'
                 : 'text-red-300 border-red-500/20 bg-red-950/30'
@@ -460,12 +476,60 @@ export default function AdminPlayerDetail() {
       <Modal isOpen={editModal} onClose={() => setEditModal(false)} title="EDIT PLAYER PROFILE" maxWidth="max-w-md">
         <div className="space-y-4">
           <div>
+            <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">In-Game Name (IGN)</label>
+            <input
+              type="text"
+              value={editForm.ign}
+              onChange={e => setEditForm(f => ({ ...f, ign: e.target.value }))}
+              className="w-full px-3 py-2 rounded-lg bg-frost-800/40 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Platform</label>
+              <select
+                value={editForm.platform}
+                onChange={e => setEditForm(f => ({ ...f, platform: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30"
+              >
+                <option value="MOBILE">MOBILE</option>
+                <option value="IPAD">IPAD</option>
+                <option value="EMULATOR">EMULATOR</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Region</label>
+              <select
+                value={editForm.region}
+                onChange={e => setEditForm(f => ({ ...f, region: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30"
+              >
+                <option value="SRI_LANKA">🇱🇰 Sri Lanka</option>
+                <option value="ASIA">🌏 Asia</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
             <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Bio</label>
             <textarea
               value={editForm.bio}
               onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))}
               rows={3}
               className="w-full px-3 py-2 rounded-lg bg-frost-800/40 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Reason for modification</label>
+            <input
+              type="text"
+              placeholder="e.g. Region or Platform adjustment"
+              value={editForm.reason}
+              onChange={e => setEditForm(f => ({ ...f, reason: e.target.value }))}
+              className="w-full px-3 py-2 rounded-lg bg-frost-800/40 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30"
             />
           </div>
           {editError && <p className="text-red-400 text-xs">{editError}</p>}

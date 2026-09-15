@@ -151,9 +151,10 @@ const getDashboard = async (req, res, next) => {
 // Players management
 const getAdminPlayers = async (req, res, next) => {
   try {
-    const { search, platform, status } = req.query;
+    const { search, platform, region, status } = req.query;
     const query = {};
     if (platform) query.platform = platform;
+    if (region) query.region = region;
     if (status) query.status = status;
 
     let players = await PlayerProfile.find(query).populate('userId', 'username email role status');
@@ -188,20 +189,22 @@ const updateAdminPlayer = async (req, res, next) => {
     const existing = await PlayerProfile.findById(req.params.id);
     if (!existing) return res.status(404).json({ success: false, message: 'Player not found.' });
 
-    const allowed = ['ign', 'pubgUid', 'platform', 'avatar', 'bio', 'status'];
+    const allowed = ['ign', 'pubgUid', 'platform', 'region', 'avatar', 'bio', 'status'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
 
-    // Require reason for platform change
+    // Require reason for platform or region change
     const oldPlatform = existing.platform;
     const newPlatform = updates.platform;
+    const oldRegion = existing.region;
+    const newRegion = updates.region;
     const reason = req.body.reason || 'Admin modification';
 
-    if (newPlatform && newPlatform !== oldPlatform) {
-      // Remove player from old platform ranks if present
-      const oldRankDoc = await Ranking.findOne({ platform: oldPlatform, players: existing._id });
+    if ((newPlatform && newPlatform !== oldPlatform) || (newRegion && newRegion !== oldRegion)) {
+      // Remove player from old platform/region ranks if present
+      const oldRankDoc = await Ranking.findOne({ platform: oldPlatform, region: oldRegion, players: existing._id });
       if (oldRankDoc) {
         oldRankDoc.players = oldRankDoc.players.filter(p => p.toString() !== existing._id.toString());
         if (oldRankDoc.players.length === 0) {
@@ -217,7 +220,7 @@ const updateAdminPlayer = async (req, res, next) => {
 
     await AdminAuditLog.create({
       adminId: req.user._id,
-      action: newPlatform && newPlatform !== oldPlatform ? 'PLAYER_PLATFORM_CHANGED' : 'PLAYER_UPDATED',
+      action: (newPlatform && newPlatform !== oldPlatform) || (newRegion && newRegion !== oldRegion) ? 'PLAYER_PLATFORM_REGION_CHANGED' : 'PLAYER_UPDATED',
       targetEntity: 'PlayerProfile',
       targetId: existing._id,
       reason,
@@ -225,6 +228,8 @@ const updateAdminPlayer = async (req, res, next) => {
         updates,
         oldPlatform,
         newPlatform: updates.platform || oldPlatform,
+        oldRegion,
+        newRegion: updates.region || oldRegion,
       },
     });
 
@@ -276,10 +281,13 @@ const restorePlayer = async (req, res, next) => {
 // Rankings
 const getAdminRankings = async (req, res, next) => {
   try {
-    const { platform } = req.query;
-    const query = platform ? { platform } : {};
-    const rankings = await Ranking.find(query).sort({ platform: 1, rank: 1 })
-      .populate('players', 'ign pubgUid platform avatar');
+    const { platform, region } = req.query;
+    const query = {};
+    if (platform) query.platform = platform;
+    if (region) query.region = region;
+
+    const rankings = await Ranking.find(query).sort({ platform: 1, region: 1, rank: 1 })
+      .populate('players', 'ign pubgUid platform region avatar');
     res.json({ success: true, data: rankings });
   } catch (err) {
     next(err);
@@ -288,12 +296,12 @@ const getAdminRankings = async (req, res, next) => {
 
 const manualRankingUpdate = async (req, res, next) => {
   try {
-    const { platform, action, playerId, targetRank, swapWithPlayerId, reason } = req.body;
+    const { platform, region = 'SRI_LANKA', action, playerId, targetRank, swapWithPlayerId, reason } = req.body;
     if (!platform || !action || !reason) {
       return res.status(400).json({ success: false, message: 'platform, action, and reason are required.' });
     }
     await rankingService.manualAdminAdjustment({
-      platform, action, playerId, targetRank, swapWithPlayerId, reason, adminId: req.user._id,
+      platform, region, action, playerId, targetRank, swapWithPlayerId, reason, adminId: req.user._id,
     });
     res.json({ success: true, message: 'Ranking updated successfully.' });
   } catch (err) {
