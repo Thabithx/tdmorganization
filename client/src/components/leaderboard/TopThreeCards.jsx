@@ -68,7 +68,7 @@ const TopThreeCards = ({ rank1, rank2, rank3 }) => {
                     variant="primary"
                     size="sm"
                     className="flex items-center space-x-1"
-                    onClick={() => navigate(`/challenge/${player._id}`)}
+                    onClick={() => alert('Will be available soon')}
                   >
                     <Swords className="w-3.5 h-3.5" />
                     <span>CHALLENGE</span>

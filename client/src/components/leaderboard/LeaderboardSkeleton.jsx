@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import Card from '../ui/Card';
 
 const LeaderboardSkeleton = () => {
+  const [showHint, setShowHint] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHint(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="w-full flex flex-col space-y-8 animate-pulse">
       {/* Platform tabs skeleton */}
-      <div className="w-64 h-10 bg-frost-800/60 rounded-xl mx-auto border border-frost-50/5" />
+      <div className="w-64 h-10 bg-frost-800/60 rounded-xl mx-auto border border-frost-50/5 relative flex items-center justify-center">
+        {showHint && <span className="absolute -top-6 text-secondary/70 text-xs w-max">Waking up servers...</span>}
+      </div>
 
       {/* Top 3 grid skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full pt-6">

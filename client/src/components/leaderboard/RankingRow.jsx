@@ -63,7 +63,7 @@ const RankingRow = ({ rankDoc }) => {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => navigate(`/challenge/${player._id}`)}
+                  onClick={() => alert('Will be available soon')}
                   className="flex items-center space-x-1"
                 >
                   <Swords className="w-3.5 h-3.5" />

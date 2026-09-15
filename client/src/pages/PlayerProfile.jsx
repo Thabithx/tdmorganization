@@ -158,7 +158,7 @@ const PlayerProfile = () => {
                   <Button
                     variant="primary"
                     size="md"
-                    onClick={() => navigate(`/challenge/${profile._id}`)}
+                    onClick={() => alert('Will be available soon')}
                     className="flex items-center space-x-2"
                   >
                     <Swords className="w-4 h-4" />
