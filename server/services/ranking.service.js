@@ -258,6 +258,17 @@ const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, p
     let auditMetadata = {};
 
     if (action === 'ADD_TO_RANK') {
+      // Cleanup: Remove player from any other rank first
+      const existingRank = await Ranking.findOne({ players: playerId }).session(session);
+      if (existingRank && (existingRank.region !== region || existingRank.platform !== platform)) {
+        existingRank.players = existingRank.players.filter(p => p.toString() !== playerId.toString());
+        if (existingRank.players.length === 0) {
+          await Ranking.deleteOne({ _id: existingRank._id }).session(session);
+        } else {
+          await existingRank.save({ session });
+        }
+      }
+
       let rankDoc = await Ranking.findOne({ platform, region, rank: targetRank }).session(session);
       if (!rankDoc) {
         rankDoc = new Ranking({ platform, region, rank: targetRank, players: [playerId] });
@@ -267,6 +278,12 @@ const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, p
         rankDoc.players.push(playerId);
       }
       await rankDoc.save({ session });
+      
+      // Update player profile to match the new region and platform (if not ALL)
+      const updateData = { region };
+      if (platform !== 'ALL') updateData.platform = platform;
+      await require('../models/PlayerProfile').findByIdAndUpdate(playerId, updateData).session(session);
+
       historyEntry = { playerId, platform, region, previousRank: null, newRank: targetRank, reason: 'PLAYER_ADDED', adminId };
       auditMetadata = { action, platform, region, targetRank };
 
