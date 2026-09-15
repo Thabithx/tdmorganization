@@ -46,14 +46,13 @@ const getPlayers = async (req, res, next) => {
     );
 
     const enriched = players.map(p => {
-      let rank = null;
+      let ranks = [];
       for (const r of allRankings) {
         if (r.players.map(pid => pid.toString()).includes(p._id.toString())) {
-          rank = r.rank;
-          break;
+          ranks.push(r.rank);
         }
       }
-      return { ...p.toObject(), currentRank: rank };
+      return { ...p.toObject(), currentRank: ranks.length > 0 ? Math.min(...ranks) : null };
     });
 
     // Rank filter
@@ -72,9 +71,9 @@ const getPlayerById = async (req, res, next) => {
     const profile = await PlayerProfile.findById(req.params.id).populate('userId', 'username email');
     if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
 
-    const targetPlatform = profile.region === 'ASIA' ? 'ALL' : profile.platform;
-    const rankDoc = await Ranking.findOne({ platform: targetPlatform, region: profile.region, players: profile._id });
-    const currentRank = rankDoc ? rankDoc.rank : null;
+    const rankDocs = await Ranking.find({ players: profile._id });
+    const currentRank = rankDocs.length > 0 ? Math.min(...rankDocs.map(r => r.rank)) : null;
+    const allRanks = rankDocs.map(r => ({ region: r.region, platform: r.platform, rank: r.rank }));
 
     const stats = await statsService.getPlayerStats(profile._id);
     const rankHistory = await RankingHistory.find({ playerId: profile._id })
@@ -102,7 +101,7 @@ const getPlayerById = async (req, res, next) => {
 
     const reliability = await statsService.getDefenderReliability(profile._id);
 
-    res.json({ success: true, data: { profile, currentRank, stats, rankHistory, rollingChallengesCount, defenderPendingCount, reliability } });
+    res.json({ success: true, data: { profile, currentRank, allRanks, stats, rankHistory, rollingChallengesCount, defenderPendingCount, reliability } });
   } catch (err) {
     next(err);
   }

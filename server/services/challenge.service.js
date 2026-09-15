@@ -244,19 +244,25 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     throw Object.assign(new Error('You cannot challenge yourself.'), { statusCode: 400 });
   }
 
-  // Authoritative Platform check
-  if (challengerProfile.region === 'SRI_LANKA' && challengerProfile.platform !== defenderProfile.platform) {
-    throw Object.assign(new Error('Players must be on the same platform in Sri Lanka.'), { statusCode: 400 });
-  }
-  if (challengerProfile.region !== defenderProfile.region) {
-    throw Object.assign(new Error('Players must be in the same region.'), { statusCode: 400 });
+  let challengeRegion = 'SRI_LANKA';
+  let targetPlatform = challengerProfile.platform;
+
+  if (challengerProfile.region === 'ASIA' || defenderProfile.region === 'ASIA') {
+    challengeRegion = 'ASIA';
+    targetPlatform = 'ALL';
+  } else {
+    // Both are SRI_LANKA
+    challengeRegion = 'SRI_LANKA';
+    targetPlatform = defenderProfile.platform;
+    if (challengerProfile.platform !== defenderProfile.platform) {
+      throw Object.assign(new Error('Players must be on the same platform in Sri Lanka.'), { statusCode: 400 });
+    }
   }
 
-  // Check defender is ranked
-  const targetPlatform = defenderProfile.region === 'ASIA' ? 'ALL' : defenderProfile.platform;
-  const defenderRankDoc = await Ranking.findOne({ platform: targetPlatform, region: defenderProfile.region, players: defenderId });
+  // Check defender is ranked in the target leaderboard
+  const defenderRankDoc = await Ranking.findOne({ platform: targetPlatform, region: challengeRegion, players: defenderId });
   if (!defenderRankDoc) {
-    throw Object.assign(new Error('You can only challenge ranked players.'), { statusCode: 400 });
+    throw Object.assign(new Error(`This player is not ranked in the ${challengeRegion === 'ASIA' ? 'Asia' : 'Sri Lanka'} leaderboard.`), { statusCode: 400 });
   }
 
   const defenderRank = defenderRankDoc.rank;
@@ -326,14 +332,14 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     }
   }
 
-  // Get challenger's current rank
-  const challengerRank = await rankingService.getPlayerRank(challengerProfile._id, targetPlatform, challengerProfile.region);
+  // Get challenger's current rank in the context of the challenge
+  const challengerRank = await rankingService.getPlayerRank(challengerProfile._id, targetPlatform, challengeRegion);
 
   // Unranked players can only challenge ranks 4–10.
   // Ranks 1–3 can only be challenged by ranked players.
   if (challengerRank === null && defenderRank <= 3) {
     throw Object.assign(
-      new Error('Unranked players cannot challenge Top 3 ranked players (Ranks #1–#3). You must be ranked first.'),
+      new Error(`Unranked players in ${challengeRegion === 'ASIA' ? 'Asia' : 'Sri Lanka'} cannot challenge Top 3 ranked players (Ranks #1–#3). You must be ranked first.`),
       { statusCode: 403 }
     );
   }
@@ -342,7 +348,7 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
     challengerId: challengerProfile._id,
     defenderId: defenderProfile._id,
     platform: targetPlatform,
-    region: challengerProfile.region,
+    region: challengeRegion,
     challengerRankAtCreation: challengerRank,
     defenderRankAtCreation: defenderRank,
     challengeAmount: amount,

@@ -55,7 +55,7 @@ const getMinimumAmount = (defenderRank) => {
  * - UNRANKED CHALLENGER WINS → Insertion at defender's rank + push-down
  * - CHALLENGER LOSES → No ranking change
  */
-const applyMatchResult = async (match, result, adminId, session) => {
+const executeRankSwap = async (match, result, adminId, session, platform, region, isSecondary = false) => {
   const historyEntries = [];
 
   if (result === 'CHALLENGER_LOST') {
@@ -66,14 +66,15 @@ const applyMatchResult = async (match, result, adminId, session) => {
   // CHALLENGER WON
   const challengerId = match.challengerId;
   const defenderId = match.defenderId;
-  const platform = match.platform;
-    const region = match.region;
+  // const platform = match.platform;
+  // const region = match.region;
 
   // Find current rank docs
   const challengerRankDoc = await Ranking.findOne({ platform, region, players: challengerId }).session(session);
   const defenderRankDoc = await Ranking.findOne({ platform, region, players: defenderId }).session(session);
 
   if (!defenderRankDoc) {
+    if (isSecondary) throw new Error('Defender is not currently ranked in secondary region.');
     throw new Error('Defender is not currently ranked. Cannot apply ranking change.');
   }
 
@@ -151,6 +152,7 @@ const applyMatchResult = async (match, result, adminId, session) => {
     // Get all ranks from defenderRank to 10, sorted descending
     const ranksToShift = await Ranking.find({
       platform,
+      region,
       rank: { $gte: defenderRank, $lte: 10 },
     }).sort({ rank: -1 }).session(session);
 
@@ -246,6 +248,36 @@ const applyMatchResult = async (match, result, adminId, session) => {
 
   return historyEntries;
 };
+const applyMatchResult = async (match, result, adminId, session) => {
+  const historyEntries = [];
+
+  if (result === 'CHALLENGER_LOST') {
+    return historyEntries;
+  }
+
+  try {
+    const primaryEntries = await executeRankSwap(match, result, adminId, session, match.platform, match.region, false);
+    historyEntries.push(...primaryEntries);
+  } catch (err) {
+    throw err; // Primary swap must succeed
+  }
+
+  // Dual-swap for Sri Lankans (also swap ASIA rank)
+  if (match.region === 'SRI_LANKA') {
+    try {
+      const secondaryEntries = await executeRankSwap(match, result, adminId, session, 'ALL', 'ASIA', true);
+      historyEntries.push(...secondaryEntries);
+    } catch (err) {
+      // If defender isn't ranked in ASIA, or there's a capacity conflict in ASIA, we just ignore the secondary swap 
+      // rather than failing the primary match resolution.
+      console.warn('Secondary ASIA rank swap failed or skipped:', err.message);
+    }
+  }
+
+  return historyEntries;
+};
+
+
 
 /**
  * Manual admin ranking adjustment.
@@ -258,17 +290,6 @@ const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, p
     let auditMetadata = {};
 
     if (action === 'ADD_TO_RANK') {
-      // Cleanup: Remove player from any other rank first
-      const existingRank = await Ranking.findOne({ players: playerId }).session(session);
-      if (existingRank && (existingRank.region !== region || existingRank.platform !== platform)) {
-        existingRank.players = existingRank.players.filter(p => p.toString() !== playerId.toString());
-        if (existingRank.players.length === 0) {
-          await Ranking.deleteOne({ _id: existingRank._id }).session(session);
-        } else {
-          await existingRank.save({ session });
-        }
-      }
-
       let rankDoc = await Ranking.findOne({ platform, region, rank: targetRank }).session(session);
       if (!rankDoc) {
         rankDoc = new Ranking({ platform, region, rank: targetRank, players: [playerId] });
@@ -278,11 +299,6 @@ const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, p
         rankDoc.players.push(playerId);
       }
       await rankDoc.save({ session });
-      
-      // Update player profile to match the new region and platform (if not ALL)
-      const updateData = { region };
-      if (platform !== 'ALL') updateData.platform = platform;
-      await require('../models/PlayerProfile').findByIdAndUpdate(playerId, updateData).session(session);
 
       historyEntry = { playerId, platform, region, previousRank: null, newRank: targetRank, reason: 'PLAYER_ADDED', adminId };
       auditMetadata = { action, platform, region, targetRank };
