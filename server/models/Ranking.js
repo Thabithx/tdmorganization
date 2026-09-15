@@ -20,7 +20,11 @@ rankingSchema.pre('save', function (next) {
 });
 
 rankingSchema.statics.getLeaderboard = async function (platform, region = 'SRI_LANKA') {
-  return this.find({ platform, region }).sort({ rank: 1 }).populate({
+  // Also match pre-migration docs that have no region field (treat as SRI_LANKA)
+  const regionQuery = region === 'SRI_LANKA'
+    ? { $in: ['SRI_LANKA', null, undefined] }
+    : region;
+  return this.find({ platform, region: regionQuery }).sort({ rank: 1 }).populate({
     path: 'players',
     select: 'ign pubgUid platform region avatar bio status reliability',
   });

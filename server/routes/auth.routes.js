@@ -16,41 +16,18 @@ router.get('/migrate-region', async (req, res) => {
     const Challenge = require('../models/Challenge');
     const Match = require('../models/Match');
     const RankingHistory = require('../models/RankingHistory');
+    const mongoose = require('mongoose');
 
-    // Drop ALL old unique indexes on Ranking that don't include region
-    const indexesBefore = await Ranking.collection.indexes();
-    const dropResults = [];
-    for (const idx of indexesBefore) {
-      const keys = Object.keys(idx.key || {});
-      // Drop any index that has platform+rank but NOT region
-      if (keys.includes('platform') && keys.includes('rank') && !keys.includes('region')) {
-        try {
-          await Ranking.collection.dropIndex(idx.name);
-          dropResults.push(`Dropped: ${idx.name}`);
-        } catch (e) {
-          dropResults.push(`Failed to drop ${idx.name}: ${e.message}`);
-        }
-      }
-    }
+    // Drop the old unique index - new one is defined in schema
+    try { await Ranking.collection.dropIndex('platform_1_rank_1'); } catch (e) { /* already gone */ }
 
-    // Ensure new index exists
-    try {
-      await Ranking.collection.createIndex({ platform: 1, region: 1, rank: 1 }, { unique: true, name: 'platform_1_region_1_rank_1' });
-      dropResults.push('Created new index: platform_1_region_1_rank_1');
-    } catch (e) {
-      dropResults.push(`New index note: ${e.message}`);
-    }
-
-    // Set region on all docs missing it
     const results = {};
     for (const [name, model] of [['PlayerProfile', PlayerProfile], ['Ranking', Ranking], ['Challenge', Challenge], ['Match', Match], ['RankingHistory', RankingHistory]]) {
       const r = await model.updateMany({ region: { $exists: false } }, { $set: { region: 'SRI_LANKA' } });
       results[name] = r.modifiedCount;
     }
 
-    const indexesAfter = await Ranking.collection.indexes();
-
-    res.json({ success: true, message: 'Migration complete', indexOps: dropResults, results, currentIndexes: indexesAfter.map(i => i.name) });
+    res.json({ success: true, message: 'Migration complete', results });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

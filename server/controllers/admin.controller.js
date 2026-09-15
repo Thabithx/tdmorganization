@@ -154,7 +154,12 @@ const getAdminPlayers = async (req, res, next) => {
     const { search, platform, region, status } = req.query;
     const query = {};
     if (platform) query.platform = platform;
-    if (region) query.region = region;
+    if (region) {
+      // Also match docs missing region field (pre-migration) as SRI_LANKA
+      query.region = region === 'SRI_LANKA'
+        ? { $in: ['SRI_LANKA', null, undefined] }
+        : region;
+    }
     if (status) query.status = status;
 
     let players = await PlayerProfile.find(query).populate('userId', 'username email role status');
@@ -284,7 +289,12 @@ const getAdminRankings = async (req, res, next) => {
     const { platform, region } = req.query;
     const query = {};
     if (platform) query.platform = platform;
-    if (region) query.region = region;
+    if (region) {
+      // Also match docs missing region field (pre-migration) as SRI_LANKA
+      query.region = region === 'SRI_LANKA'
+        ? { $in: ['SRI_LANKA', null, undefined] }
+        : region;
+    }
 
     const rankings = await Ranking.find(query).sort({ platform: 1, region: 1, rank: 1 })
       .populate('players', 'ign pubgUid platform region avatar');

@@ -38,7 +38,7 @@ export default function AdminRankings() {
     try {
       const [rankRes, playerRes] = await Promise.all([
         adminService.getAdminRankings({ platform, region }),
-        adminService.getAdminPlayers({ platform, region })
+        adminService.getAdminPlayers({ platform })  // fetch all platform players regardless of region
       ]);
       if (rankRes.success) setRankings(rankRes.data);
       if (playerRes.success) setAllPlayers(playerRes.data);
