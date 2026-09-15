@@ -89,7 +89,7 @@ const Navbar = () => {
                 {/* Profile */}
                 <Link to="/profile" className="flex items-center space-x-2 text-secondary hover:text-frost-50 transition-colors px-2 py-1 rounded-lg hover:bg-frost-50/5">
                   <User className="w-4 h-4" />
-                  <span className="text-sm font-medium">{user.username}</span>
+                  <span className="text-sm font-medium">{user?.username || 'Profile'}</span>
                 </Link>
 
                 {/* Logout */}
