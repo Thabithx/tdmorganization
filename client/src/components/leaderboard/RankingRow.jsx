@@ -40,8 +40,9 @@ const RankingRow = ({ rankDoc }) => {
               >
                 <PlayerAvatar profile={player} size="sm" objectPosition={player.avatarPosition} />
                 <div>
-                  <h5 className="font-heading font-bold text-sm text-[#F4FBFF] group-hover:text-frost-50 transition-colors uppercase tracking-wider">
-                    {player.ign}
+                  <h5 className="font-heading font-bold text-sm text-[#F4FBFF] group-hover:text-frost-50 transition-colors uppercase tracking-wider flex items-center space-x-2">
+                    <span>{player.ign}</span>
+                    {player.countryFlag && <span className="text-base" title="Country Flag">{player.countryFlag}</span>}
                   </h5>
                   <p className="text-[#8A9AAD] text-xs">
                     UID: {player.pubgUid}

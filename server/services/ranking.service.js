@@ -282,7 +282,7 @@ const applyMatchResult = async (match, result, adminId, session) => {
 /**
  * Manual admin ranking adjustment.
  */
-const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, playerId, targetRank, swapWithPlayerId, reason, adminId }) => {
+const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, playerId, targetRank, swapWithPlayerId, reason, countryFlag, adminId }) => {
   const session = await require('mongoose').startSession();
   session.startTransaction();
   try {
@@ -299,6 +299,10 @@ const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, p
         rankDoc.players.push(playerId);
       }
       await rankDoc.save({ session });
+      
+      if (countryFlag) {
+        await require('../models/PlayerProfile').findByIdAndUpdate(playerId, { countryFlag }).session(session);
+      }
 
       historyEntry = { playerId, platform, region, previousRank: null, newRank: targetRank, reason: 'PLAYER_ADDED', adminId };
       auditMetadata = { action, platform, region, targetRank };

@@ -307,12 +307,12 @@ const getAdminRankings = async (req, res, next) => {
 
 const manualRankingUpdate = async (req, res, next) => {
   try {
-    const { platform, region = 'SRI_LANKA', action, playerId, targetRank, swapWithPlayerId, reason } = req.body;
+    const { platform, region = 'SRI_LANKA', action, playerId, targetRank, swapWithPlayerId, reason, countryFlag } = req.body;
     if (!platform || !action || !reason) {
       return res.status(400).json({ success: false, message: 'platform, action, and reason are required.' });
     }
     await rankingService.manualAdminAdjustment({
-      platform, region, action, playerId, targetRank, swapWithPlayerId, reason, adminId: req.user._id,
+      platform, region, action, playerId, targetRank, swapWithPlayerId, reason, countryFlag, adminId: req.user._id,
     });
     res.json({ success: true, message: 'Ranking updated successfully.' });
   } catch (err) {

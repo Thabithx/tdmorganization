@@ -30,6 +30,7 @@ export default function AdminRankings() {
   const [addModal, setAddModal] = useState({ open: false, targetRank: 1 });
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
   const [addReason, setAddReason] = useState('');
+  const [countryFlag, setCountryFlag] = useState('');
   const [addError, setAddError] = useState('');
   const [adding, setAdding] = useState(false);
 
@@ -178,11 +179,13 @@ export default function AdminRankings() {
         action: 'ADD_TO_RANK',
         playerId: selectedPlayerId,
         targetRank: addModal.targetRank,
-        reason: addReason.trim()
+        reason: addReason.trim(),
+        countryFlag: region === 'ASIA' ? countryFlag : undefined
       });
       setAddModal({ open: false, targetRank: 1 });
       setSelectedPlayerId('');
       setAddReason('');
+      setCountryFlag('');
       fetchRankings();
     } catch (err) {
       setAddError(err.response?.data?.message || 'Failed to add player to rank.');
@@ -449,6 +452,18 @@ export default function AdminRankings() {
               </select>
             )}
           </div>
+
+          {region === 'ASIA' && (
+            <div>
+              <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Country / Flag (Emoji)</label>
+              <input
+                value={countryFlag}
+                onChange={e => setCountryFlag(e.target.value)}
+                placeholder="e.g. 🇮🇳 or 🇵🇰"
+                className="w-full px-3 py-2 rounded-lg bg-frost-800/40 border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-frost-50/30"
+              />
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Reason (Required)</label>

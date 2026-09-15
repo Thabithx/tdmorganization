@@ -47,9 +47,10 @@ const TopThreeCards = ({ rank1, rank2, rank3 }) => {
                 {/* Info */}
                 <h4
                   onClick={() => navigate(`/players/${player._id}`)}
-                  className={`mt-3 font-heading font-bold text-base cursor-pointer hover:text-frost-50 transition-colors uppercase tracking-wider ${textGlow}`}
+                  className={`mt-3 font-heading font-bold text-base cursor-pointer hover:text-frost-50 transition-colors uppercase tracking-wider ${textGlow} flex items-center justify-center space-x-2`}
                 >
-                  {player.ign}
+                  <span>{player.ign}</span>
+                  {player.countryFlag && <span className="text-lg" title="Country Flag">{player.countryFlag}</span>}
                 </h4>
                 <p className="text-secondary text-xs uppercase font-semibold tracking-wider mt-0.5">
                   UID: {player.pubgUid}
