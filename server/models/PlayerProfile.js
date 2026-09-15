@@ -4,7 +4,7 @@ const playerProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   ign: { type: String, required: true, unique: true, trim: true },
   pubgUid: { type: String, required: true, unique: true, trim: true },
-  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR', 'ALL'], required: true },
   region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   whatsapp: { type: String, required: true, trim: true },
   avatar: { type: String, default: '/default_avatar.png' },

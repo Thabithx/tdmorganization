@@ -72,7 +72,8 @@ const getPlayerById = async (req, res, next) => {
     const profile = await PlayerProfile.findById(req.params.id).populate('userId', 'username email');
     if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
 
-    const rankDoc = await Ranking.findOne({ platform: profile.platform, players: profile._id });
+    const targetPlatform = profile.region === 'ASIA' ? 'ALL' : profile.platform;
+    const rankDoc = await Ranking.findOne({ platform: targetPlatform, region: profile.region, players: profile._id });
     const currentRank = rankDoc ? rankDoc.rank : null;
 
     const stats = await statsService.getPlayerStats(profile._id);

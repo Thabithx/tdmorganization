@@ -58,7 +58,10 @@ const Rankings = () => {
       <div className="flex justify-center">
         <div className="inline-flex items-center rounded-xl border border-frost-50/10 bg-frost-900/60 p-1 gap-1">
           <button
-            onClick={() => setRegion('SRI_LANKA')}
+            onClick={() => {
+              setRegion('SRI_LANKA');
+              if (platform === 'ALL') setPlatform('MOBILE');
+            }}
             className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
               region === 'SRI_LANKA'
                 ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
@@ -69,7 +72,10 @@ const Rankings = () => {
             <span>Sri Lanka</span>
           </button>
           <button
-            onClick={() => setRegion('ASIA')}
+            onClick={() => {
+              setRegion('ASIA');
+              setPlatform('ALL');
+            }}
             className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
               region === 'ASIA'
                 ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
@@ -83,7 +89,9 @@ const Rankings = () => {
       </div>
 
       {/* Platform Tabs */}
-      <PlatformTabs activePlatform={platform} onChange={setPlatform} />
+      {region === 'SRI_LANKA' && (
+        <PlatformTabs activePlatform={platform} onChange={setPlatform} />
+      )}
 
       {/* Leaderboard Content */}
       <AnimatePresence mode="wait">

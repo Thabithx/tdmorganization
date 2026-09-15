@@ -49,7 +49,8 @@ const getChallenges = async (req, res, next) => {
     let isRankedTop10 = false;
     if (profile) {
       const Ranking = require('../models/Ranking');
-      const defenderRankDoc = await Ranking.findOne({ platform: profile.platform, players: profile._id });
+      const targetPlatform = profile.region === 'ASIA' ? 'ALL' : profile.platform;
+      const defenderRankDoc = await Ranking.findOne({ platform: targetPlatform, region: profile.region, players: profile._id });
       if (defenderRankDoc && defenderRankDoc.rank <= 10) {
         isRankedTop10 = true;
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

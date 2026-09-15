@@ -245,15 +245,16 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   }
 
   // Authoritative Platform check
-  if (challengerProfile.platform !== defenderProfile.platform) {
-    throw Object.assign(new Error('Players must be on the same platform.'), { statusCode: 400 });
+  if (challengerProfile.region === 'SRI_LANKA' && challengerProfile.platform !== defenderProfile.platform) {
+    throw Object.assign(new Error('Players must be on the same platform in Sri Lanka.'), { statusCode: 400 });
   }
   if (challengerProfile.region !== defenderProfile.region) {
     throw Object.assign(new Error('Players must be in the same region.'), { statusCode: 400 });
   }
 
   // Check defender is ranked
-  const defenderRankDoc = await Ranking.findOne({ platform: defenderProfile.platform, region: defenderProfile.region, players: defenderId });
+  const targetPlatform = defenderProfile.region === 'ASIA' ? 'ALL' : defenderProfile.platform;
+  const defenderRankDoc = await Ranking.findOne({ platform: targetPlatform, region: defenderProfile.region, players: defenderId });
   if (!defenderRankDoc) {
     throw Object.assign(new Error('You can only challenge ranked players.'), { statusCode: 400 });
   }
@@ -326,7 +327,7 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   }
 
   // Get challenger's current rank
-  const challengerRank = await rankingService.getPlayerRank(challengerProfile._id, challengerProfile.platform);
+  const challengerRank = await rankingService.getPlayerRank(challengerProfile._id, targetPlatform, challengerProfile.region);
 
   // Unranked players can only challenge ranks 4–10.
   // Ranks 1–3 can only be challenged by ranked players.
@@ -340,7 +341,7 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   const challenge = await Challenge.create({
     challengerId: challengerProfile._id,
     defenderId: defenderProfile._id,
-    platform: challengerProfile.platform,
+    platform: targetPlatform,
     region: challengerProfile.region,
     challengerRankAtCreation: challengerRank,
     defenderRankAtCreation: defenderRank,

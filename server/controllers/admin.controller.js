@@ -29,7 +29,7 @@ const uploadToCloudinary = (fileBuffer) => {
 const getDashboard = async (req, res, next) => {
   try {
     const Notification = require('../models/Notification');
-    const PLATFORMS = ['MOBILE', 'IPAD', 'EMULATOR'];
+    const PLATFORMS = ['MOBILE', 'IPAD', 'EMULATOR', 'ALL'];
 
     const [
       totalPlayers, rankedAgg, pendingChallenges, pendingPayments,
@@ -153,7 +153,7 @@ const getAdminPlayers = async (req, res, next) => {
   try {
     const { search, platform, region, status } = req.query;
     const query = {};
-    if (platform) query.platform = platform;
+    if (platform && platform !== 'ALL') query.platform = platform;
     if (region) {
       // Also match docs missing region field (pre-migration) as SRI_LANKA
       query.region = region === 'SRI_LANKA'
@@ -209,7 +209,8 @@ const updateAdminPlayer = async (req, res, next) => {
 
     if ((newPlatform && newPlatform !== oldPlatform) || (newRegion && newRegion !== oldRegion)) {
       // Remove player from old platform/region ranks if present
-      const oldRankDoc = await Ranking.findOne({ platform: oldPlatform, region: oldRegion, players: existing._id });
+      const targetOldPlatform = oldRegion === 'ASIA' ? 'ALL' : oldPlatform;
+      const oldRankDoc = await Ranking.findOne({ platform: targetOldPlatform, region: oldRegion, players: existing._id });
       if (oldRankDoc) {
         oldRankDoc.players = oldRankDoc.players.filter(p => p.toString() !== existing._id.toString());
         if (oldRankDoc.players.length === 0) {
@@ -610,7 +611,8 @@ const getAdminPlayerById = async (req, res, next) => {
       
     if (!profile) return res.status(404).json({ success: false, message: 'Player not found.' });
 
-    const rankDoc = await Ranking.findOne({ platform: profile.platform, players: profile._id });
+    const targetPlatform = profile.region === 'ASIA' ? 'ALL' : profile.platform;
+    const rankDoc = await Ranking.findOne({ platform: targetPlatform, region: profile.region, players: profile._id });
     const currentRank = rankDoc ? rankDoc.rank : null;
 
     const stats = await statsService.getPlayerStats(profile._id);

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const rankingSchema = new mongoose.Schema({
-  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR', 'ALL'], required: true },
   region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   rank: { type: Number, required: true, min: 1, max: 10 },
   players: [{

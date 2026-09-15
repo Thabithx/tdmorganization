@@ -5,7 +5,7 @@ const getLeaderboard = async (req, res, next) => {
     const { platform } = req.params;
     const { region = 'SRI_LANKA' } = req.query;
 
-    if (!['MOBILE', 'IPAD', 'EMULATOR'].includes(platform)) {
+    if (!['MOBILE', 'IPAD', 'EMULATOR', 'ALL'].includes(platform)) {
       return res.status(400).json({ success: false, message: 'Invalid platform.' });
     }
     if (!['SRI_LANKA', 'ASIA'].includes(region)) {

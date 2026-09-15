@@ -13,7 +13,7 @@ const matchSchema = new mongoose.Schema({
   defenderId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', required: true },
   winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', default: null },
   loserId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', default: null },
-  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR', 'ALL'], required: true },
   region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   challengeAmount: { type: Number, required: true },
   currency: { type: String, default: 'LKR' },
