@@ -430,8 +430,8 @@ export default function AdminRankings() {
             {unrankedPlayers.length === 0 ? (
               <p className="text-[#4A5D6E] text-xs italic">
                 {allPlayers.length === 0 
-                  ? `No registered players found in the ${region === 'SRI_LANKA' ? 'Sri Lanka' : 'Asia'} region.`
-                  : `All registered players for this region and platform are currently ranked.`
+                  ? `No registered players found in the ${region === 'ASIA' ? 'Asia' : platform} region yet.`
+                  : `All registered players for ${region === 'ASIA' ? 'Asia' : platform} are currently ranked.`
                 }
               </p>
             ) : (
