@@ -22,7 +22,9 @@ const createChallenge = async (req, res, next) => {
 const getChallenges = async (req, res, next) => {
   try {
     const profile = await PlayerProfile.findOne({ userId: req.user._id });
-    if (!profile) return res.status(404).json({ success: false, message: 'Profile not found.' });
+    if (!profile) {
+      return res.json({ success: true, data: [], meta: { declineCount: 0, isRankedTop10: false } });
+    }
 
     const { status, role } = req.query;
     const query = {};
