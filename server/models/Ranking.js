@@ -26,7 +26,7 @@ rankingSchema.statics.getLeaderboard = async function (platform, region = 'SRI_L
     : region;
   return this.find({ platform, region: regionQuery }).sort({ rank: 1 }).populate({
     path: 'players',
-    select: 'ign pubgUid platform region avatar bio status reliability',
+    select: 'ign pubgUid platform region avatar bio status reliability countryFlag avatarPosition',
   });
 };
 

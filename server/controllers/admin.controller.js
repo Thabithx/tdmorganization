@@ -298,7 +298,7 @@ const getAdminRankings = async (req, res, next) => {
     }
 
     const rankings = await Ranking.find(query).sort({ platform: 1, region: 1, rank: 1 })
-      .populate('players', 'ign pubgUid platform region avatar');
+      .populate('players', 'ign pubgUid platform region avatar avatarPosition countryFlag');
     res.json({ success: true, data: rankings });
   } catch (err) {
     next(err);

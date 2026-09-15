@@ -332,7 +332,7 @@ export default function AdminRankings() {
                         >
                           <Move className="w-3.5 h-3.5 text-[#4A5D6E] group-hover:text-[#8BE3FF] transition-colors flex-shrink-0" />
                           <div>
-                            <p className="font-heading font-bold text-sm text-[#F4FBFF] uppercase tracking-wide leading-none">{player.ign}</p>
+                            <p className="font-heading font-bold text-sm text-[#F4FBFF] uppercase tracking-wide leading-none flex items-center gap-1.5"><span>{player.ign}</span>{player.countryFlag && <span className="text-base" title="Country">{player.countryFlag}</span>}</p>
                             <p className="text-[#4A5D6E] text-[10px] font-mono mt-0.5">{player.pubgUid}</p>
                           </div>
 
