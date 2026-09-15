@@ -251,11 +251,9 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   if (challengerProfile.region !== defenderProfile.region) {
     throw Object.assign(new Error('Players must be in the same region.'), { statusCode: 400 });
   }
-    throw Object.assign(new Error('You can only challenge players on the same platform.'), { statusCode: 400 });
-  }
 
   // Check defender is ranked
-  const defenderRankDoc = await Ranking.findOne({ platform: defenderProfile.platform, players: defenderId });
+  const defenderRankDoc = await Ranking.findOne({ platform: defenderProfile.platform, region: defenderProfile.region, players: defenderId });
   if (!defenderRankDoc) {
     throw Object.assign(new Error('You can only challenge ranked players.'), { statusCode: 400 });
   }
