@@ -428,7 +428,12 @@ export default function AdminRankings() {
           <div>
             <label className="text-xs font-heading font-semibold text-[#4A5D6E] uppercase tracking-widest block mb-1">Select Player</label>
             {unrankedPlayers.length === 0 ? (
-              <p className="text-[#4A5D6E] text-xs italic">All registered players for {platform} are currently ranked.</p>
+              <p className="text-[#4A5D6E] text-xs italic">
+                {allPlayers.length === 0 
+                  ? `No registered players found in the ${region === 'SRI_LANKA' ? 'Sri Lanka' : 'Asia'} region.`
+                  : `All registered players for this region and platform are currently ranked.`
+                }
+              </p>
             ) : (
               <select
                 value={selectedPlayerId}
