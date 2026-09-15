@@ -21,6 +21,7 @@ const Register = () => {
     ign: '',
     pubgUid: '',
     platform: 'MOBILE',
+    region: 'SRI_LANKA',
     whatsapp: '',
   });
   const [showPw, setShowPw] = useState(false);
@@ -165,6 +166,22 @@ const Register = () => {
                     {PLATFORMS.map(p => (
                       <option key={p} value={p} className="bg-[#0B101A]">{p}</option>
                     ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className={labelClass}>Region</label>
+                <div className="relative">
+                  <select
+                    name="region"
+                    value={formData.region}
+                    onChange={handleChange}
+                    className={`${inputClass} appearance-none pr-10`}
+                  >
+                    <option value="SRI_LANKA" className="bg-[#0B101A]">🇱🇰 Sri Lanka</option>
+                    <option value="ASIA" className="bg-[#0B101A]">🌏 Asia</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
                 </div>

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const rankingHistorySchema = new mongoose.Schema({
   playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', required: true },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   previousRank: { type: Number, default: null },
   newRank: { type: Number, default: null },
   reason: {

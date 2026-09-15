@@ -4,6 +4,7 @@ const challengeSchema = new mongoose.Schema({
   challengerId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', required: true },
   defenderId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', required: true },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   challengerRankAtCreation: { type: Number, default: null },
   defenderRankAtCreation: { type: Number, required: true },
   challengeAmount: { type: Number, required: true },

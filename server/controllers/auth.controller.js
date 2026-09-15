@@ -50,7 +50,9 @@ const sendResetEmail = async (toEmail, resetUrl) => {
 
 const register = async (req, res, next) => {
   try {
-    const { username, email, password, ign, pubgUid, platform, whatsapp } = req.body;
+    const { username, email, password, ign, pubgUid, platform, whatsapp, region } = req.body;
+
+    const userRegion = region || 'SRI_LANKA';
 
     if (!username || !email || !password || !ign || !pubgUid || !platform || !whatsapp) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -58,12 +60,15 @@ const register = async (req, res, next) => {
     if (!['MOBILE', 'IPAD', 'EMULATOR'].includes(platform)) {
       return res.status(400).json({ success: false, message: 'Invalid platform.' });
     }
+    if (!['SRI_LANKA', 'ASIA'].includes(userRegion)) {
+      return res.status(400).json({ success: false, message: 'Invalid region.' });
+    }
     if (password.length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
     }
 
     const user = await User.create({ username, email, passwordHash: password, role: 'PLAYER' });
-    const profile = await PlayerProfile.create({ userId: user._id, ign, pubgUid, platform, whatsapp });
+    const profile = await PlayerProfile.create({ userId: user._id, ign, pubgUid, platform, whatsapp, region: userRegion });
 
     const token = generateToken(user._id);
     res.status(201).json({ success: true, data: { token, user, profile } });

@@ -17,6 +17,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [platform, setPlatform] = useState('MOBILE');
+  const [region, setRegion] = useState('SRI_LANKA');
   const [leaderboard, setLeaderboard] = useState([]);
   const [latestMatches, setLatestMatches] = useState([]);
   const [loadingRank, setLoadingRank] = useState(true);
@@ -26,7 +27,7 @@ const Home = () => {
     const fetchLeaderboard = async () => {
       setLoadingRank(true);
       try {
-        const res = await rankingService.getLeaderboard(platform);
+        const res = await rankingService.getLeaderboard(platform, region);
         if (res.success) {
           setLeaderboard(res.data);
         }
@@ -37,7 +38,7 @@ const Home = () => {
       }
     };
     fetchLeaderboard();
-  }, [platform]);
+  }, [platform, region]);
 
   useEffect(() => {
     const fetchLatestMatches = async () => {
@@ -129,6 +130,34 @@ const Home = () => {
           <p className="text-secondary text-sm max-w-md mx-auto">
             There is only one way up. Find your platform and challenge the elite.
           </p>
+        </div>
+
+        {/* Region Toggle */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center rounded-xl border border-frost-50/10 bg-frost-900/60 p-1 gap-1">
+            <button
+              onClick={() => setRegion('SRI_LANKA')}
+              className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
+                region === 'SRI_LANKA'
+                  ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
+                  : 'text-secondary hover:text-frost-50'
+              }`}
+            >
+              <span>🇱🇰</span>
+              <span>Sri Lanka</span>
+            </button>
+            <button
+              onClick={() => setRegion('ASIA')}
+              className={`flex items-center space-x-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200 ${
+                region === 'ASIA'
+                  ? 'bg-frost-50/10 text-frost-50 shadow-[0_0_12px_rgba(139,223,255,0.15)]'
+                  : 'text-secondary hover:text-frost-50'
+              }`}
+            >
+              <span>🌏</span>
+              <span>Asia</span>
+            </button>
+          </div>
         </div>
 
         <PlatformTabs activePlatform={platform} onChange={setPlatform} />

@@ -14,6 +14,7 @@ const matchSchema = new mongoose.Schema({
   winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', default: null },
   loserId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerProfile', default: null },
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   challengeAmount: { type: Number, required: true },
   currency: { type: String, default: 'LKR' },
   // Rank snapshots at time of challenge creation

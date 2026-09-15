@@ -8,23 +8,23 @@ const ACTIVE_STATUSES = ['PENDING','ACCEPTED','PAYMENT_PENDING','PAYMENT_CONFIRM
 /**
  * Get the full leaderboard for a platform.
  */
-const getLeaderboard = async (platform) => {
-  return Ranking.getLeaderboard(platform);
+const getLeaderboard = async (platform, region = "SRI_LANKA") => {
+  return Ranking.getLeaderboard(platform, region);
 };
 
 /**
  * Get the current rank number of a player in a platform, or null if unranked.
  */
-const getPlayerRank = async (playerId, platform) => {
-  const rankDoc = await Ranking.findOne({ platform, players: playerId });
+const getPlayerRank = async (playerId, platform, region = "SRI_LANKA") => {
+  const rankDoc = await Ranking.findOne({ platform, region, players: playerId });
   return rankDoc ? rankDoc.rank : null;
 };
 
 /**
  * Get the ranking doc for a player in a platform.
  */
-const getPlayerRankDoc = async (playerId, platform) => {
-  return Ranking.findOne({ platform, players: playerId });
+const getPlayerRankDoc = async (playerId, platform, region = "SRI_LANKA") => {
+  return Ranking.findOne({ platform, region, players: playerId });
 };
 
 /**
@@ -67,10 +67,11 @@ const applyMatchResult = async (match, result, adminId, session) => {
   const challengerId = match.challengerId;
   const defenderId = match.defenderId;
   const platform = match.platform;
+    const region = match.region;
 
   // Find current rank docs
-  const challengerRankDoc = await Ranking.findOne({ platform, players: challengerId }).session(session);
-  const defenderRankDoc = await Ranking.findOne({ platform, players: defenderId }).session(session);
+  const challengerRankDoc = await Ranking.findOne({ platform, region, players: challengerId }).session(session);
+  const defenderRankDoc = await Ranking.findOne({ platform, region, players: defenderId }).session(session);
 
   if (!defenderRankDoc) {
     throw new Error('Defender is not currently ranked. Cannot apply ranking change.');
@@ -114,6 +115,7 @@ const applyMatchResult = async (match, result, adminId, session) => {
     historyEntries.push({
       playerId: challengerId,
       platform,
+      region,
       previousRank: challengerRank,
       newRank: defenderRank,
       reason: 'MATCH_WIN',
@@ -163,7 +165,8 @@ const applyMatchResult = async (match, result, adminId, session) => {
         for (const pid of rankDoc.players) {
           historyShifts.push({
             playerId: pid,
-            platform,
+              platform,
+              region,
             previousRank: oldRank,
             newRank: null,
             reason: 'UNRANKED_PROMOTION',
@@ -176,13 +179,14 @@ const applyMatchResult = async (match, result, adminId, session) => {
         await Ranking.deleteOne({ _id: rankDoc._id }).session(session);
       } else {
         // Check if rank newRank already exists
-        let nextRankDoc = await Ranking.findOne({ platform, rank: newRank }).session(session);
+        let nextRankDoc = await Ranking.findOne({ platform, region, rank: newRank }).session(session);
         if (!nextRankDoc) {
-          nextRankDoc = new Ranking({ platform, rank: newRank, players: rankDoc.players });
+          nextRankDoc = new Ranking({ platform, region, rank: newRank, players: rankDoc.players });
           for (const pid of rankDoc.players) {
             historyShifts.push({
               playerId: pid,
               platform,
+              region,
               previousRank: oldRank,
               newRank,
               reason: 'UNRANKED_PROMOTION',
@@ -202,6 +206,7 @@ const applyMatchResult = async (match, result, adminId, session) => {
             historyShifts.push({
               playerId: pid,
               platform,
+              region,
               previousRank: oldRank,
               newRank,
               reason: 'UNRANKED_PROMOTION',
@@ -219,13 +224,14 @@ const applyMatchResult = async (match, result, adminId, session) => {
     }
 
     // Now place the unranked challenger at defenderRank (which is now free)
-    const newRankDoc = new Ranking({ platform, rank: defenderRank, players: [challengerId] });
+    const newRankDoc = new Ranking({ platform, region, rank: defenderRank, players: [challengerId] });
     await newRankDoc.save({ session });
 
     // History for unranked challenger
     historyEntries.push({
       playerId: challengerId,
       platform,
+      region,
       previousRank: null,
       newRank: defenderRank,
       reason: 'UNRANKED_PROMOTION',
@@ -244,7 +250,7 @@ const applyMatchResult = async (match, result, adminId, session) => {
 /**
  * Manual admin ranking adjustment.
  */
-const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, swapWithPlayerId, reason, adminId }) => {
+const manualAdminAdjustment = async ({ platform, region = "SRI_LANKA", action, playerId, targetRank, swapWithPlayerId, reason, adminId }) => {
   const session = await require('mongoose').startSession();
   session.startTransaction();
   try {
@@ -252,20 +258,20 @@ const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, s
     let auditMetadata = {};
 
     if (action === 'ADD_TO_RANK') {
-      let rankDoc = await Ranking.findOne({ platform, rank: targetRank }).session(session);
+      let rankDoc = await Ranking.findOne({ platform, region, rank: targetRank }).session(session);
       if (!rankDoc) {
-        rankDoc = new Ranking({ platform, rank: targetRank, players: [playerId] });
+        rankDoc = new Ranking({ platform, region, rank: targetRank, players: [playerId] });
       } else {
         if (rankDoc.players.length >= 3) throw new Error('Rank is full (max 3 players).');
         if (rankDoc.players.map(p => p.toString()).includes(playerId.toString())) throw new Error('Player already in this rank.');
         rankDoc.players.push(playerId);
       }
       await rankDoc.save({ session });
-      historyEntry = { playerId, platform, previousRank: null, newRank: targetRank, reason: 'PLAYER_ADDED', adminId };
-      auditMetadata = { action, platform, targetRank };
+      historyEntry = { playerId, platform, region, previousRank: null, newRank: targetRank, reason: 'PLAYER_ADDED', adminId };
+      auditMetadata = { action, platform, region, targetRank };
 
     } else if (action === 'REMOVE_FROM_RANK') {
-      const rankDoc = await Ranking.findOne({ platform, players: playerId }).session(session);
+      const rankDoc = await Ranking.findOne({ platform, region, players: playerId }).session(session);
       if (!rankDoc) throw new Error('Player is not ranked.');
       const oldRank = rankDoc.rank;
       rankDoc.players = rankDoc.players.filter(p => p.toString() !== playerId.toString());
@@ -274,12 +280,12 @@ const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, s
       } else {
         await rankDoc.save({ session });
       }
-      historyEntry = { playerId, platform, previousRank: oldRank, newRank: null, reason: 'PLAYER_REMOVED', adminId };
-      auditMetadata = { action, platform, oldRank };
+      historyEntry = { playerId, platform, region, previousRank: oldRank, newRank: null, reason: 'PLAYER_REMOVED', adminId };
+      auditMetadata = { action, platform, region, oldRank };
 
     } else if (action === 'MOVE_TO_RANK') {
       // Remove from current rank
-      const currentRankDoc = await Ranking.findOne({ platform, players: playerId }).session(session);
+      const currentRankDoc = await Ranking.findOne({ platform, region, players: playerId }).session(session);
       const oldRank = currentRankDoc ? currentRankDoc.rank : null;
       if (currentRankDoc) {
         currentRankDoc.players = currentRankDoc.players.filter(p => p.toString() !== playerId.toString());
@@ -290,21 +296,21 @@ const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, s
         }
       }
       // Add to target rank
-      let targetRankDoc = await Ranking.findOne({ platform, rank: targetRank }).session(session);
+      let targetRankDoc = await Ranking.findOne({ platform, region, rank: targetRank }).session(session);
       if (!targetRankDoc) {
-        targetRankDoc = new Ranking({ platform, rank: targetRank, players: [playerId] });
+        targetRankDoc = new Ranking({ platform, region, rank: targetRank, players: [playerId] });
       } else {
         if (targetRankDoc.players.length >= 3) throw new Error('Target rank is full (max 3 players).');
         targetRankDoc.players.push(playerId);
       }
       await targetRankDoc.save({ session });
-      historyEntry = { playerId, platform, previousRank: oldRank, newRank: targetRank, reason: 'ADMIN_ADJUSTMENT', adminId };
-      auditMetadata = { action, platform, oldRank, targetRank };
+      historyEntry = { playerId, platform, region, previousRank: oldRank, newRank: targetRank, reason: 'ADMIN_ADJUSTMENT', adminId };
+      auditMetadata = { action, platform, region, oldRank, targetRank };
 
     } else if (action === 'SWAP_PLAYERS') {
       // Swap two specific players in their rank positions
-      const rankDocA = await Ranking.findOne({ platform, players: playerId }).session(session);
-      const rankDocB = await Ranking.findOne({ platform, players: swapWithPlayerId }).session(session);
+      const rankDocA = await Ranking.findOne({ platform, region, players: playerId }).session(session);
+      const rankDocB = await Ranking.findOne({ platform, region, players: swapWithPlayerId }).session(session);
       if (!rankDocA || !rankDocB) throw new Error('One or both players are not ranked.');
 
       const rankA = rankDocA.rank;
@@ -322,10 +328,10 @@ const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, s
       }
 
       historyEntry = [
-        { playerId, platform, previousRank: rankA, newRank: rankB, reason: 'ADMIN_ADJUSTMENT', adminId },
-        { playerId: swapWithPlayerId, platform, previousRank: rankB, newRank: rankA, reason: 'ADMIN_ADJUSTMENT', adminId },
+        { playerId, platform, region, previousRank: rankA, newRank: rankB, reason: 'ADMIN_ADJUSTMENT', adminId },
+        { playerId: swapWithPlayerId, platform, region, previousRank: rankB, newRank: rankA, reason: 'ADMIN_ADJUSTMENT', adminId },
       ];
-      auditMetadata = { action, platform, rankA, rankB };
+      auditMetadata = { action, platform, region, rankA, rankB };
     }
 
     // Create history
@@ -357,8 +363,8 @@ const manualAdminAdjustment = async ({ platform, action, playerId, targetRank, s
  * Validate ranking integrity for a platform.
  * Returns { valid: true } or { valid: false, issues: [...] }
  */
-const validateRankingIntegrity = async (platform) => {
-  const ranks = await Ranking.find({ platform });
+const validateRankingIntegrity = async (platform, region = "SRI_LANKA") => {
+  const ranks = await Ranking.find({ platform, region });
   const issues = [];
   const seenPlayers = new Set();
 

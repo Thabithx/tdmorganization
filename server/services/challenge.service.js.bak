@@ -251,6 +251,9 @@ const createChallenge = async ({ challengerUserId, defenderId, amount }) => {
   if (challengerProfile.region !== defenderProfile.region) {
     throw Object.assign(new Error('Players must be in the same region.'), { statusCode: 400 });
   }
+  if (challengerProfile.region !== defenderProfile.region) {
+    throw Object.assign(new Error('Players must be in the same region.'), { statusCode: 400 });
+  }
     throw Object.assign(new Error('You can only challenge players on the same platform.'), { statusCode: 400 });
   }
 

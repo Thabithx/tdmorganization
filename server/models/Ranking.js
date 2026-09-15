@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const rankingSchema = new mongoose.Schema({
   platform: { type: String, enum: ['MOBILE', 'IPAD', 'EMULATOR'], required: true },
+  region: { type: String, enum: ['SRI_LANKA', 'ASIA'], required: true, default: 'SRI_LANKA' },
   rank: { type: Number, required: true, min: 1, max: 10 },
   players: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -9,7 +10,7 @@ const rankingSchema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
-rankingSchema.index({ platform: 1, rank: 1 }, { unique: true });
+rankingSchema.index({ platform: 1, region: 1, rank: 1 }, { unique: true });
 
 rankingSchema.pre('save', function (next) {
   if (this.players.length > 3) {
@@ -18,10 +19,10 @@ rankingSchema.pre('save', function (next) {
   next();
 });
 
-rankingSchema.statics.getLeaderboard = async function (platform) {
-  return this.find({ platform }).sort({ rank: 1 }).populate({
+rankingSchema.statics.getLeaderboard = async function (platform, region = 'SRI_LANKA') {
+  return this.find({ platform, region }).sort({ rank: 1 }).populate({
     path: 'players',
-    select: 'ign pubgUid platform avatar bio status',
+    select: 'ign pubgUid platform region avatar bio status reliability',
   });
 };
 

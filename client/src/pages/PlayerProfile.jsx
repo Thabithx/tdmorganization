@@ -92,6 +92,12 @@ const PlayerProfile = () => {
             <div className="flex items-center space-x-3 flex-wrap justify-center sm:justify-start">
               <RankBadge rank={currentRank} size="md" />
               <PlatformBadge platform={profile.platform} />
+              {profile.region && (
+                <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md border border-frost-50/10 bg-frost-800/40 text-secondary text-xs font-semibold uppercase tracking-wider">
+                  <span>{profile.region === 'SRI_LANKA' ? '🇱🇰' : '🌏'}</span>
+                  <span>{profile.region === 'SRI_LANKA' ? 'Sri Lanka' : 'Asia'}</span>
+                </span>
+              )}
             </div>
 
             <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-[#F4FBFF] uppercase tracking-wider flex items-center gap-3">

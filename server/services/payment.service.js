@@ -140,18 +140,19 @@ const handlePayhereWebhook = async (body) => {
       // Create Match record
       const challengerRankDoc = await Ranking.findOne({
         platform: challenge.platform,
-        players: challenge.challengerId._id,
-      });
+        region: challenge.region,
+        players: challenge.challengerId._id });
       const defenderRankDoc = await Ranking.findOne({
         platform: challenge.platform,
-        players: challenge.defenderId._id,
-      });
+        region: challenge.region,
+        players: challenge.defenderId._id });
 
       await Match.create({
         challengeId: challenge._id,
         challengerId: challenge.challengerId._id,
         defenderId: challenge.defenderId._id,
         platform: challenge.platform,
+        region: challenge.region,
         challengeAmount: challenge.challengeAmount,
         currency: challenge.currency,
         challengerRankAtChallenge: challenge.challengerRankAtCreation,
@@ -218,8 +219,14 @@ const adminConfirmPayment = async (paymentId, adminUser) => {
     challenge.status = 'PAYMENT_CONFIRMED';
     await challenge.save();
 
-    const challengerRankDoc = await Ranking.findOne({ platform: challenge.platform, players: challenge.challengerId._id });
-    const defenderRankDoc = await Ranking.findOne({ platform: challenge.platform, players: challenge.defenderId._id });
+    const challengerRankDoc = await Ranking.findOne({
+        platform: challenge.platform,
+        region: challenge.region,
+        players: challenge.challengerId._id });
+    const defenderRankDoc = await Ranking.findOne({
+        platform: challenge.platform,
+        region: challenge.region,
+        players: challenge.defenderId._id });
 
     // Check if match already exists
     const existingMatch = await Match.findOne({ challengeId: challenge._id });
@@ -229,6 +236,7 @@ const adminConfirmPayment = async (paymentId, adminUser) => {
         challengerId: challenge.challengerId._id,
         defenderId: challenge.defenderId._id,
         platform: challenge.platform,
+        region: challenge.region,
         challengeAmount: challenge.challengeAmount,
         currency: challenge.currency,
         challengerRankAtChallenge: challenge.challengerRankAtCreation,
