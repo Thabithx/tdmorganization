@@ -85,7 +85,7 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">Confirm Password</label>
+                <label className="text-xs font-heading font-semibold text-secondary uppercase tracking-widest">Confirm</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/50" />
                   <input

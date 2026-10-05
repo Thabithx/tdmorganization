@@ -211,7 +211,7 @@ const Register = () => {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className={labelClass}>Confirm Password</label>
+                <label className={labelClass}>Confirm</label>
                 <input
                   type={showPw ? 'text' : 'password'}
                   name="confirmPassword"

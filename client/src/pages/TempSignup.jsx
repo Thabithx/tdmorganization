@@ -256,7 +256,7 @@ export default function TempSignup() {
                 </div>
                 <div>
                   <label className="text-[10px] font-heading font-bold text-[#4A5D6E] uppercase tracking-widest block mb-1">
-                    Confirm Password
+                    Confirm
                   </label>
                   <input
                     type="password"
