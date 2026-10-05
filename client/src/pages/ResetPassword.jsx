@@ -63,7 +63,7 @@ const ResetPassword = () => {
           ) : (
             <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
               <p className="text-secondary text-sm leading-relaxed">
-                Choose a strong new password for your FROST account.
+                Choose a strong new password for your FROSTxDOLLER account.
               </p>
 
               <div className="space-y-1.5">

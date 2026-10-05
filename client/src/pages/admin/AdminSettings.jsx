@@ -178,7 +178,7 @@ export default function AdminSettings() {
         </div>
         <div className="p-5 space-y-2">
           {[
-            { label: 'Platform', value: 'FROST Competitive TDM' },
+            { label: 'Platform', value: 'FROSTxDOLLER Competitive TDM' },
             { label: 'Ranking Mode', value: 'Manual Admin Verification' },
             { label: 'Supported Platforms', value: 'MOBILE · IPAD · EMULATOR' },
             { label: 'Ranking Capacity', value: 'Top 10 per platform, max 3 per rank' },

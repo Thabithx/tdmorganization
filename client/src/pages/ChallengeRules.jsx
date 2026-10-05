@@ -53,7 +53,7 @@ const ChallengeRules = () => {
           <span className="text-frost-50">Match Protocol</span>
         </h1>
         <p className="text-secondary text-sm max-w-xl mx-auto leading-relaxed">
-          All challenges conducted through FROST must strictly adhere to these regulations. Failure to follow recording format or in-game rules will lead to immediate disqualification.
+          All challenges conducted through FROSTxDOLLER must strictly adhere to these regulations. Failure to follow recording format or in-game rules will lead to immediate disqualification.
         </p>
       </div>
 
@@ -110,14 +110,14 @@ const ChallengeRules = () => {
         <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 mb-4">
           <p className="text-red-300 text-xs font-heading font-bold uppercase tracking-widest text-center">⚠️ ZERO TOLERANCE POLICY ⚠️</p>
         </div>
-        <Rule type="banned" text="Any form of cheating, hacking, mods, third-party assist tools, or falsified recording submissions will result in an IMMEDIATE LIFETIME BAN from FROST." />
+        <Rule type="banned" text="Any form of cheating, hacking, mods, third-party assist tools, or falsified recording submissions will result in an IMMEDIATE LIFETIME BAN from FROSTxDOLLER." />
         <Rule type="warning" text="Admin decisions on match results, disputes, and disqualifications are absolute and final." />
       </Section>
 
       {/* Fair Play */}
-      <Section icon={Trophy} title="FROST Code of Fair Play" color="amber-300">
+      <Section icon={Trophy} title="FROSTxDOLLER Code of Fair Play" color="amber-300">
         <Rule type="good" text="Win with dignity. Lose with respect. Every match is an opportunity to improve." />
-        <Rule type="good" text="The FROST leaderboard is earned through skill and integrity. Protect that integrity." />
+        <Rule type="good" text="The FROSTxDOLLER leaderboard is earned through skill and integrity. Protect that integrity." />
       </Section>
 
       {/* Admin Contact */}
@@ -125,7 +125,7 @@ const ChallengeRules = () => {
         <ShieldAlert className="w-6 h-6 text-frost-50 mx-auto" />
         <h3 className="font-heading font-bold text-[#F4FBFF] uppercase tracking-wide text-sm">Questions or Reports?</h3>
         <p className="text-secondary text-xs leading-relaxed">
-          Contact the FROST administrator through the challenge dashboard or reach out directly.<br />
+          Contact the FROSTxDOLLER administrator through the challenge dashboard or reach out directly.<br />
           Admin manages all match verifications, results, and disputes.
         </p>
       </Card>

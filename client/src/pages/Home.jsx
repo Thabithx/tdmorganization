@@ -260,7 +260,7 @@ const Home = () => {
             LATEST RESULTS
           </h2>
           <p className="text-secondary text-sm">
-            Recent competitive results verified by FROST Administration.
+            Recent competitive results verified by FROSTxDOLLER Administration.
           </p>
         </div>
 

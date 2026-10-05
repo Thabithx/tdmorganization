@@ -110,7 +110,7 @@ const Navbar = () => {
                   to="/register"
                   className="px-4 py-2 rounded-lg bg-gradient-to-r from-frost-50 to-[#58c5f2] text-[#05070D] hover:brightness-110 text-sm font-semibold transition-all duration-300 shadow-[0_0_10px_rgba(139,223,255,0.15)]"
                 >
-                  JOIN FROST
+                  JOIN FROSTxDOLLER
                 </Link>
               </div>
             )}
@@ -215,7 +215,7 @@ const Navbar = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full text-center py-2 bg-gradient-to-r from-frost-50 to-[#58c5f2] text-[#05070D] font-semibold rounded-lg"
                 >
-                  JOIN FROST
+                  JOIN FROSTxDOLLER
                 </Link>
               </div>
             )}

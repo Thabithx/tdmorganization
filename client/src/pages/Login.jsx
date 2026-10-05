@@ -89,10 +89,10 @@ const Login = () => {
                 <span>{error}</span>
               </div>
             )}
-            <Button type="submit" variant="primary" size="lg" isLoading={loading} className="w-full mt-2">LOGIN TO FROST</Button>
+            <Button type="submit" variant="primary" size="lg" isLoading={loading} className="w-full mt-2">LOGIN TO FROSTxDOLLER</Button>
             <p className="text-center text-secondary text-xs pt-2">
               Don't have an account?{' '}
-              <Link to="/register" className="text-frost-50 hover:text-white font-semibold transition-colors">Join FROST</Link>
+              <Link to="/register" className="text-frost-50 hover:text-white font-semibold transition-colors">Join FROSTxDOLLER</Link>
             </p>
           </form>
         </Card>

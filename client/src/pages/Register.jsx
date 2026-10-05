@@ -81,7 +81,7 @@ const Register = () => {
           <div className="px-8 pt-8 pb-6 text-center space-y-3 border-b border-frost-50/10">
             <FrostLogo className="text-3xl justify-center" />
             <p className="text-secondary text-sm uppercase tracking-widest font-semibold">
-              Join the FROST Network
+              Join the FROSTxDOLLER Network
             </p>
           </div>
 
@@ -122,7 +122,7 @@ const Register = () => {
                 required
                 value={formData.ign}
                 onChange={handleChange}
-                placeholder="RDHxFROST"
+                placeholder="RDHxFROSTxDOLLER"
                 className={inputClass}
               />
             </div>
@@ -237,7 +237,7 @@ const Register = () => {
             )}
 
             <Button type="submit" variant="primary" size="lg" isLoading={loading} className="w-full mt-2">
-              CREATE FROST ACCOUNT
+              CREATE FROSTxDOLLER ACCOUNT
             </Button>
 
             <p className="text-center text-secondary text-xs pt-1">

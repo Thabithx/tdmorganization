@@ -96,13 +96,13 @@ export default function TempSignup() {
 
       {/* Main Container */}
       <div className="relative z-10 w-full max-w-md my-auto">
-        {/* FROST Header Branding */}
+        {/* FROSTxDOLLER Header Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8BE3FF]/20 to-[#0B101A] border border-[#8BE3FF]/30 shadow-[0_0_25px_rgba(139,227,255,0.15)] mb-4">
             <Snowflake className="w-7 h-7 text-[#8BE3FF] animate-pulse" />
           </div>
           <h1 className="font-heading font-black text-3xl sm:text-4xl text-[#F4FBFF] uppercase tracking-widest leading-none">
-            FROST
+            FROSTxDOLLER
           </h1>
           <p className="text-[#8BE3FF] text-[10px] sm:text-xs font-heading font-bold uppercase tracking-[0.25em] mt-1.5">
             COMPETITIVE NETWORK
@@ -119,10 +119,10 @@ export default function TempSignup() {
 
             <div className="space-y-2">
               <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#F4FBFF] uppercase tracking-wider">
-                Welcome to FROST's Organization ❄️
+                Welcome to FROSTxDOLLER's Organization ❄️
               </h2>
               <p className="text-[#8BE3FF] text-sm font-heading font-bold uppercase tracking-wide">
-                You are officially part of the FROST organization.
+                You are officially part of the FROSTxDOLLER organization.
               </p>
             </div>
 
@@ -143,10 +143,10 @@ export default function TempSignup() {
           <Card variant="elevated" className="p-6 sm:p-8 border-frost-50/15 backdrop-blur-xl shadow-[0_0_50px_rgba(0,0,0,0.6)]">
             <div className="text-center mb-6">
               <h2 className="font-heading text-xl sm:text-2xl font-black text-[#F4FBFF] uppercase tracking-wider">
-                JOIN THE FROST ORGANIZATION
+                JOIN THE FROSTxDOLLER ORGANIZATION
               </h2>
               <p className="text-[#8A9AAD] text-xs sm:text-sm mt-1">
-                Register now to join the FROST TDM community.
+                Register now to join the FROSTxDOLLER TDM community.
               </p>
             </div>
 
@@ -163,7 +163,7 @@ export default function TempSignup() {
                     required
                     value={form.ign}
                     onChange={handleChange}
-                    placeholder="FROST"
+                    placeholder="FROSTxDOLLER"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#06090F] border border-frost-50/10 text-[#F4FBFF] text-sm focus:outline-none focus:border-[#8BE3FF]/50 transition-all placeholder-[#2A3D4E]"
                   />
                 </div>
@@ -293,7 +293,7 @@ export default function TempSignup() {
         {/* Footer info */}
         <div className="text-center mt-6">
           <p className="text-[#2A3D4E] text-[10px] font-heading font-semibold uppercase tracking-widest">
-            © FROST COMPETITIVE NETWORK
+            © FROSTxDOLLER COMPETITIVE NETWORK
           </p>
         </div>
       </div>
