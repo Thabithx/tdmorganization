@@ -112,7 +112,7 @@ export default function AdminLayout() {
         </div>
         {!collapsed && (
           <div>
-            <p className="font-heading font-black text-[#F4FBFF] text-sm uppercase tracking-widest leading-none">FROST</p>
+            <p className="font-heading font-black text-[#F4FBFF] text-sm uppercase tracking-widest leading-none">FROSTxDOLLER</p>
             <p className="text-[#4A5D6E] text-[9px] uppercase tracking-widest font-semibold mt-0.5">OPS CENTER</p>
           </div>
         )}
@@ -282,7 +282,7 @@ function BreadcrumbLabel() {
     : 'Admin');
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[#2A3D4E] text-xs font-heading font-semibold uppercase tracking-widest">FROST OPS</span>
+      <span className="text-[#2A3D4E] text-xs font-heading font-semibold uppercase tracking-widest">FROSTxDOLLER OPS</span>
       <ChevronRight className="w-3 h-3 text-[#2A3D4E]" />
       <span className="text-[#8BE3FF] text-xs font-heading font-semibold uppercase tracking-widest">{label}</span>
     </div>

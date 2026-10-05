@@ -55,7 +55,7 @@ const AdminDashboard = () => {
       {/* Page title */}
       <div>
         <h1 className="text-2xl font-heading font-extrabold text-[#F4FBFF] uppercase tracking-wider">OPERATIONS DASHBOARD</h1>
-        <p className="text-[#4A5D6E] text-xs uppercase font-semibold tracking-widest mt-1">FROST Competitive Control Center</p>
+        <p className="text-[#4A5D6E] text-xs uppercase font-semibold tracking-widest mt-1">FROSTxDOLLER Competitive Control Center</p>
       </div>
 
       {/* Stats Grid */}

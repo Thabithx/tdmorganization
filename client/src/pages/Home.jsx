@@ -71,7 +71,7 @@ const Home = () => {
           {/* Logo preview */}
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border border-frost-50/10 bg-frost-800/40 text-frost-50 text-xs font-semibold tracking-widest uppercase">
             <Flame className="w-3.5 h-3.5" />
-            <span>ASIAN TDM COMPETITIVE NETWORK</span>
+            <span>FROSTxDOLLER</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-extrabold tracking-tight text-[#F4FBFF] leading-tight">

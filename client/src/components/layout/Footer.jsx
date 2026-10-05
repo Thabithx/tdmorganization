@@ -13,7 +13,7 @@ const Footer = () => {
           {/* Logo & tagline */}
           <div className="flex flex-col items-center md:items-start space-y-2">
             <FrostLogo className="text-xl" />
-            <p className="text-secondary/50 text-xs tracking-widest uppercase">Asian TDM Competitive Network</p>
+            <p className="text-secondary/50 text-xs tracking-widest uppercase">FROSTxDOLLER</p>
           </div>
 
           {/* Nav links */}
@@ -29,10 +29,10 @@ const Footer = () => {
           {/* Copyright */}
           <div className="text-center md:text-right space-y-1">
             <p className="text-secondary/40 text-xs">
-              © {year} <span className="text-frost-50/60 font-semibold">FROST TDM Network</span>. All rights reserved.
+              © {year} <span className="text-frost-50/60 font-semibold">FROSTxDOLLER</span>. All rights reserved.
             </p>
             <p className="text-secondary/30 text-[10px] leading-relaxed max-w-xs">
-              All content, ranking systems, challenge mechanics, and platform design are the exclusive intellectual property of FROST TDM Network. Unauthorized reproduction or imitation is prohibited.
+              All content, ranking systems, challenge mechanics, and platform design are the exclusive intellectual property of FROSTxDOLLER. Unauthorized reproduction or imitation is prohibited.
             </p>
           </div>
         </div>

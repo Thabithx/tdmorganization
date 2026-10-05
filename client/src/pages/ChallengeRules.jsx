@@ -46,7 +46,7 @@ const ChallengeRules = () => {
       <div className="text-center space-y-4">
         <div className="inline-flex items-center space-x-3 px-4 py-2 rounded-full bg-frost-700/40 border border-frost-50/10">
           <Swords className="w-4 h-4 text-frost-50" />
-          <span className="text-frost-50 text-xs font-heading uppercase tracking-widest font-bold">FROST TDM Network</span>
+          <span className="text-frost-50 text-xs font-heading uppercase tracking-widest font-bold">FROSTxDOLLER</span>
         </div>
         <h1 className="text-4xl font-heading font-extrabold text-[#F4FBFF] uppercase tracking-wider leading-tight">
           Challenge Rules &<br />

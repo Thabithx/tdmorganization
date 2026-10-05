@@ -11,7 +11,7 @@ const FrostLogo = ({ className = '', glow = true }) => {
           fontFamily: '"Space Grotesk", sans-serif',
         }}
       >
-        FROST
+        FROSTxDOLLER
       </span>
     </div>
   );
